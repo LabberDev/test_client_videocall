@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Evita zoom automatico su iOS (font >=16px) e adatta ai notch -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Demo Mediasoup - Client Standalone (Mobile-friendly)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --brand:#0d6efd; --brand-d:#0b5ed7; --bg:#0b0b0c; --card:#111214; --muted:#9aa4b2; --text:#e7e9ee;
+      --radius:12px; --shadow:0 6px 18px rgba(0,0,0,.25);
+    }
+    *,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{ height:100%; }
+    body{
+      font-family: Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      /* Evita doppio tap zoom senza disabilitare pinch */
+      touch-action: manipulation;
+    }
+    header{
+      position: sticky; top: 0; z-index: 10;
+      background: linear-gradient(180deg, #0d1b2a 0%, #0b1320 100%);
+      color:#fff; padding: .9rem env(safe-area-inset-right) .9rem env(safe-area-inset-left);
+      text-align:center; border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    header h1{ font-weight:500; font-size: clamp(1rem, 2.2vw + .6rem, 1.25rem); }
+
+    .container{
+      max-width: 1100px; margin: 0 auto; padding: .75rem env(safe-area-inset-right) 1rem env(safe-area-inset-left);
+      display: grid; gap: 1rem; grid-template-columns: 1fr;
+    }
+
+    .card{
+      background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow);
+      padding: 1rem; border: 1px solid rgba(255,255,255,.06);
+    }
+
+    .form-grid{
+      display:grid; gap:.9rem; grid-template-columns: repeat(auto-fit, minmax(230px,1fr));
+    }
+    label{ display:block; margin-bottom:.35rem; font-weight:500; color:#d6dae3; }
+    input,select{
+      width:100%; padding:.9rem; border:1px solid rgba(255,255,255,.14); border-radius:10px;
+      background:#0f1115; color:#e6e9f0; font-size:16px; /* >=16px evita zoom iOS */
+      outline:none; transition:border .2s, box-shadow .2s;
+    }
+    input:focus,select:focus{ border-color: var(--brand); box-shadow: 0 0 0 3px rgba(13,110,253,.2); }
+
+    .actions{ display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.5rem; }
+    button{
+      appearance:none; border:none; cursor:pointer; border-radius:10px; padding:.85rem 1rem; font-size:16px;
+      background:var(--brand); color:#fff; box-shadow: var(--shadow); font-weight:500;
+    }
+    button:hover{ background:var(--brand-d); }
+    .btn-secondary{ background:#1b1f2a; color:#dfe6f0; }
+
+    .videos{
+      display:grid; gap:1rem;
+      grid-template-columns: 1fr; /* mobile */
+    }
+    @media (min-width: 900px){
+      .videos{ grid-template-columns: 1fr 1fr; }
+    }
+
+    .video-shell{
+      position:relative; border-radius: var(--radius); overflow:hidden; background:#000; min-height: 240px;
+      border:1px solid rgba(255,255,255,.06); box-shadow: var(--shadow);
+    }
+    /* Mantieni stabilità del layout e niente zoom/scroll strani */
+    .video-shell video{
+      width:100%; height:100%; display:block; object-fit:contain; background:#000;
+    }
+
+    /* Modalità "focus remote" su smartphone: remoto full, locale PiP */
+    .stage{
+      position:relative; height: calc(100vh - 230px); /* spazio per card e header */
+      border-radius: var(--radius); overflow:hidden; background:#000; border:1px solid rgba(255,255,255,.06);
+    }
+    .stage video{ width:100%; height:100%; object-fit:contain; background:#000; }
+
+    .pip{
+      position:absolute; right:.6rem; bottom:.6rem; width: 28vw; max-width: 200px; aspect-ratio: 9/16;
+      border:2px solid rgba(255,255,255,.7); border-radius:12px; overflow:hidden; box-shadow: 0 8px 24px rgba(0,0,0,.45);
+      background:#000;
+    }
+    .pip video{ width:100%; height:100%; object-fit:cover; }
+
+    .hint{ color: var(--muted); font-size:.9rem; margin-top:.5rem; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Demo Mediasoup</h1>
+  </header>
+
+  <div class="container">
+    <div class="card">
+      <div class="form-grid">
+        <div>
+          <label for="roomId">Room ID</label>
+          <input id="roomId" type="text" placeholder="es. room789_1" />
+        </div>
+        <div>
+          <label for="clientType">Client Type</label>
+          <select id="clientType">
+            <option value="guest">guest</option>
+            <option value="host">host</option>
+          </select>
+        </div>
+        <div>
+          <label for="token">Token</label>
+          <input id="token" type="text" placeholder="es. guest_1" />
+        </div>
+        <div>
+          <label for="videoSource">Seleziona Fotocamera</label>
+          <select id="videoSource"></select>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="startCallBtn">Avvia Chiamata</button>
+        <button id="hangupBtn" class="btn-secondary">Termina Chiamata</button>
+      </div>
+      <p class="hint">Suggerimento: puoi passare i parametri via URL, es:
+        <code>?roomId=room789_1&clientType=guest&token=guest_1</code>
+      </p>
+    </div>
+
+    <!-- Sezione video ottimizzata per mobile: remoto "stage" fullscreen-ish + PiP locale verticale -->
+    <div class="stage">
+      <video id="remoteVideo" autoplay playsinline></video>
+      <div class="pip">
+        <video id="localVideo" autoplay muted playsinline></video>
+      </div>
+    </div>
+
+    <!-- In layout desktop mostriamo anche i due riquadri fianco a fianco -->
+    <div class="videos">
+      <div class="video-shell"><video id="localVideoDesk" autoplay muted playsinline></video></div>
+      <div class="video-shell"><video id="remoteVideoDesk" autoplay playsinline></video></div>
+    </div>
+  </div>
+
+  <!-- Import ESM da CDN -->
+  <script type="module">
+    import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+    import { Device } from "https://esm.sh/mediasoup-client@3";
+
+    // --- UI refs
+    const startCallBtn = document.getElementById('startCallBtn');
+    const hangupBtn = document.getElementById('hangupBtn');
+    const roomIdInput = document.getElementById('roomId');
+    const clientTypeInput = document.getElementById('clientType');
+    const tokenInput = document.getElementById('token');
+    const videoSourceSelect = document.getElementById('videoSource');
+
+    const localVideoMobile = document.getElementById('localVideo');
+    const remoteVideoMobile = document.getElementById('remoteVideo');
+    const localVideoDesk = document.getElementById('localVideoDesk');
+    const remoteVideoDesk = document.getElementById('remoteVideoDesk');
+
+    // --- Stato
+    let socket, device, sendTransport, recvTransport, localStream;
+    const remoteStream = new MediaStream();
+
+    // --- Server URL
+    const serverURL = "https://videocall.webcheckin.cloud:4000";
+
+    // --- Helpers RPC
+    const joinRoom = (roomId, clientType, token) => new Promise((resolve, reject) => {
+      socket.emit('joinRoom', { roomId, clientType, token }, (params) => {
+        if (params?.error) return reject(new Error(params.error));
+        resolve(params);
+      });
+    });
+
+    const getRouterCapabilities = () => new Promise((resolve, reject) => {
+      socket.emit('getRouterCapabilities', null, (params) => {
+        if (params?.error) return reject(new Error(params.error));
+        resolve(params.rtpCapabilities);
+      });
+    });
+
+    const createTransport = (direction) => new Promise((resolve, reject) => {
+      socket.emit('transportCreate', { direction }, (params) => {
+        if (params?.error) return reject(new Error(params.error));
+        const transport = direction === 'send'
+          ? device.createSendTransport(params)
+          : device.createRecvTransport(params);
+        resolve(transport);
+      });
+    });
+
+    const consume = (producerId) => new Promise((resolve, reject) => {
+      socket.emit('transportConsume', {
+        transportId: recvTransport.id,
+        producerId,
+        rtpCapabilities: device.rtpCapabilities
+      }, (params) => {
+        if (params?.error) return reject(new Error(params.error));
+        resolve(params);
+      });
+    });
+
+    function setupTransportListeners(transport, direction) {
+      if (transport._listenersRegistered) return;
+      transport.on('connect', ({ dtlsParameters }, callback, errback) => {
+        socket.emit('transportConnect', { transportId: transport.id, dtlsParameters }, (res) => {
+          if (res?.error) errback(res.error); else callback();
+        });
+      });
+      if (direction === 'send') {
+        transport.on('produce', ({ kind, rtpParameters }, callback, errback) => {
+          socket.emit('transportProduce', { transportId: transport.id, kind, rtpParameters }, (res) => {
+            if (res?.error) errback(res.error); else callback({ id: res.producerId });
+          });
+        });
+      }
+      transport._listenersRegistered = true;
+    }
+
+    async function populateCameraList() {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(d => d.kind === 'videoinput');
+        videoSourceSelect.innerHTML = '';
+        videoDevices.forEach((d, i) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Fotocamera ${i + 1}`;
+          videoSourceSelect.appendChild(opt);
+        });
+      } catch (e) {
+        console.error('Errore nel recuperare le fotocamere:', e);
+      }
+    }
+
+    function pickConstraints() {
+      // 24 fps, verticale per default su smartphone
+      const portrait = window.matchMedia('(orientation: portrait)').matches;
+      const selectedCameraId = videoSourceSelect.value;
+      // Se portrait e su telefono, preferisci 720 sulla dimensione lunga
+      const video = portrait
+        ? { width: { ideal: 720 }, height: { ideal: 1280 } }
+        : { width: { ideal: 1280 }, height: { ideal: 720 } };
+      return {
+        video: {
+          ...video,
+          frameRate: { ideal: 24, max: 24 },
+          facingMode: 'user',
+          ...(selectedCameraId ? { deviceId: { exact: selectedCameraId } } : {})
+        },
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      };
+    }
+
+    async function getLocalStream() {
+      const constraints = pickConstraints();
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // Mostra preview locale in entrambe le viste
+      const onlyVideo = new MediaStream(stream.getVideoTracks());
+      localVideoMobile.srcObject = onlyVideo;
+      localVideoDesk.srcObject = onlyVideo;
+      return stream;
+    }
+
+    async function produceTracks() {
+      if (!sendTransport || !localStream) return;
+      const audioTrack = localStream.getAudioTracks()[0];
+      const videoTrack = localStream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        await sendTransport.produce({
+          track: audioTrack,
+          codecOptions: { opusDtx: true, opusFec: true, opusStereo: false }
+        });
+      }
+      if (videoTrack) {
+        // Singola traccia, bitrate contenuto; niente simulcast per risparmiare banda
+        await sendTransport.produce({
+          track: videoTrack,
+          encodings: [ { maxBitrate: 300_000 } ],
+          codecOptions: { videoGoogleStartBitrate: 300 }
+        });
+      }
+    }
+
+    async function subscribeToProducer(producerId, remoteSocketId) {
+      if (remoteSocketId === socket?.id || recvTransport?.appData?.socketId === socket?.id) return;
+      try {
+        const { id, kind, rtpParameters } = await consume(producerId);
+        const consumer = await recvTransport.consume({ id, producerId, kind, rtpParameters });
+        remoteStream.addTrack(consumer.track);
+        // Pubblica su entrambe le viste
+        remoteVideoMobile.srcObject = remoteStream;
+        remoteVideoDesk.srcObject = remoteStream;
+        socket.emit('consumerResume', { consumerId: consumer.id }, (res) => {
+          if (res?.error) console.error('Errore consumerResume:', res.error);
+        });
+      } catch (err) {
+        console.error('Errore nella subscribeToProducer:', err);
+      }
+    }
+
+    async function startCall() {
+      const roomId = roomIdInput.value.trim();
+      const clientType = clientTypeInput.value.trim();
+      const token = tokenInput.value.trim();
+      if (!roomId || !clientType || !token) return alert('Compila roomId, clientType e token.');
+
+      socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
+
+      const { canJoinRoom, existingProducers } = await joinRoom(roomId, clientType, token);
+      if (!canJoinRoom) return alert('Accesso alla room negato');
+
+      const routerRtpCapabilities = await getRouterCapabilities();
+      device = new Device();
+      await device.load({ routerRtpCapabilities });
+
+      if (!device.canProduce('audio') && !device.canProduce('video')) {
+        return alert('Questo device non può produrre audio o video.');
+      }
+
+      // Media locale (24fps + orientazione)
+      localStream = await getLocalStream();
+
+      // Trasporti
+      sendTransport = await createTransport('send');
+      setupTransportListeners(sendTransport, 'send');
+
+      recvTransport = await createTransport('recv');
+      setupTransportListeners(recvTransport, 'recv');
+
+      // Produce
+      await produceTracks();
+
+      // Producer già presenti
+      for (const p of (existingProducers || [])) {
+        await subscribeToProducer(p.producerId ?? p, p?.appData?.socketId);
+      }
+
+      // Nuovi producer
+      socket.on('newProducer', ({ producerId, kind, appData }) => {
+        if (appData?.socketId !== socket.id) subscribeToProducer(producerId, appData.socketId);
+      });
+
+      socket.on('hangup', hangupCall);
+
+      console.log('Videochiamata avviata');
+    }
+
+    function hangupCall() {
+      try {
+        if (sendTransport) { sendTransport.close(); sendTransport = null; }
+        if (recvTransport) { recvTransport.close(); recvTransport = null; }
+        if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+        if (socket) { socket.disconnect(); socket = null; }
+        [localVideoMobile, localVideoDesk, remoteVideoMobile, remoteVideoDesk].forEach(v => v.srcObject = null);
+      } catch (e) { console.error('Errore in hangup:', e); }
+    }
+
+    // --- UX iniziale: parametri URL + permessi + lista camere
+    window.addEventListener('load', async () => {
+      const q = new URLSearchParams(location.search);
+      if (q.get('roomId')) roomIdInput.value = q.get('roomId');
+      if (q.get('clientType')) clientTypeInput.value = q.get('clientType');
+      if (q.get('token')) tokenInput.value = q.get('token');
+
+      try {
+        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        tmp.getTracks().forEach(t => t.stop());
+      } catch {}
+      await populateCameraList();
+    });
+
+    // Reacquisisci la cam se ruoti il device (per rispettare portrait/landscape desiderati)
+    window.matchMedia('(orientation: portrait)').addEventListener('change', async () => {
+      try {
+        if (!sendTransport) return; // solo se in call
+        // Stoppa tracce correnti e rinegozia con nuove constraint
+        localStream?.getTracks().forEach(t => t.stop());
+        localStream = await getLocalStream();
+      } catch (e) { console.warn('Errore nel riadattare la cam dopo rotazione:', e); }
+    });
+
+    startCallBtn.addEventListener('click', () => startCall().catch(e => console.error(e)));
+    hangupBtn.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
+  </script>
+</body>
+</html>
