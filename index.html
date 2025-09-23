@@ -496,8 +496,22 @@
       if (!sendTransport || !localStream) return;
       const audioTrack = localStream.getAudioTracks()[0];
       const videoTrack = localStream.getVideoTracks()[0];
-      if (audioTrack) audioProducer = await sendTransport.produce({ track: audioTrack });
-      if (videoTrack) videoProducer = await sendTransport.produce({ track: videoTrack });
+
+      // Preferenze codec per massima compatibilità desktop (Safari/HW accel)
+      const caps = device.rtpCapabilities;
+      const preferH264 = caps?.codecs?.find(c => /video\/h264/i.test(c.mimeType));
+      const preferVP8  = caps?.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
+      const videoCodec = preferH264 || preferVP8 || undefined;
+      const opus       = caps?.codecs?.find(c => /audio\/opus/i.test(c.mimeType));
+
+      try {
+        if (audioTrack) audioProducer = await sendTransport.produce({ track: audioTrack, codec: opus });
+        if (videoTrack) videoProducer = await sendTransport.produce({ track: videoTrack, codec: videoCodec });
+        console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer, videoCodec: videoCodec?.mimeType });
+      } catch (err) {
+        console.error('[produce] failed', err);
+        toast('Errore nel publish delle tracce');
+      }
     }
 
     async function subscribeToProducer(producerId, remoteSocketId) {
@@ -527,6 +541,8 @@
 
       socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
 
+      socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
+
       uiRoomId.textContent = roomId;
       uiClientType.textContent = clientType;
       setStatus(true, 'Connessione…');
@@ -554,9 +570,11 @@
       // Trasporti
       sendTransport = await createTransport('send');
       setupTransportListeners(sendTransport, 'send');
+      sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
 
       recvTransport = await createTransport('recv');
       setupTransportListeners(recvTransport, 'recv');
+      recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
 
       // Produce
       await produceTracks();
