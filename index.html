@@ -141,11 +141,15 @@
     .prejoin-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 50; }
     .prejoin {
       width: min(920px, 92vw);
+      max-height: 90vh;
       background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
       display: grid; grid-template-columns: 1fr 360px;
+    }
+    .preview {
+      max-height: 45vh;
     }
     .prejoin .preview { background: #000; min-height: 260px; }
     .prejoin .form { padding: 16px; border-left: 1px solid rgba(255,255,255,.06); display: grid; gap: 10px; }
@@ -241,12 +245,9 @@
         <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni" title="Impostazioni">
           <span class="material-symbols-rounded">tune</span>
         </button>
-        <button class="ctrl-btn" id="btnUnmute" aria-label="Sblocca riproduzione" title="Sblocca audio/video" hidden>
-          <span class="material-symbols-rounded">volume_up</span>
-        </button>
       </div>
     </div>
-    </div>
+  </div>
 
   <!-- Prejoin Modal -->
   <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
@@ -341,13 +342,9 @@
     const btnSwitchCam = document.getElementById('btnSwitchCam');
     const btnHangup = document.getElementById('btnHangup');
     const btnSettings = document.getElementById('btnSettings');
-    const btnUnmute = document.getElementById('btnUnmute');
     const openSettings = document.getElementById('openSettings');
     const settingsDlg = document.getElementById('settingsDlg');
     const qualitySelect = document.getElementById('quality');
-
-    // Codec preference (can be overridden in Settings in future)
-    let forceCodec = null; // 'h264' | 'vp8' | null
 
     const snackbar = document.getElementById('snackbar');
 
@@ -371,8 +368,6 @@
       }
 
     const remoteStream = new MediaStream();
-
-    
 
     // --- Helpers server RPC (socket.io a server remoto)
     const serverURL = "https://videocall.webcheckin.cloud:4000";
@@ -489,49 +484,22 @@
       if (!sendTransport || !localStream) return;
       const audioTrack = localStream.getAudioTracks()[0];
       const videoTrack = localStream.getVideoTracks()[0];
-
-      const caps = device?.rtpCapabilities || {};
-      let videoCodec;
-      if (forceCodec === 'h264') {
-        videoCodec = caps.codecs?.find(c => /video\/h264/i.test(c.mimeType));
-      } else if (forceCodec === 'vp8') {
-        videoCodec = caps.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
-      } else {
-        const preferH264 = caps.codecs?.find(c => /video\/h264/i.test(c.mimeType));
-        const preferVP8  = caps.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
-        videoCodec = preferH264 || preferVP8;
-      }
-      const opus = caps.codecs?.find(c => /audio\/opus/i.test(c.mimeType));
-
-      try {
-        if (audioTrack) {
-          audioProducer = await sendTransport.produce({ track: audioTrack, codec: opus });
-        }
-        if (videoTrack) {
-          videoProducer = await sendTransport.produce({ track: videoTrack, codec: videoCodec });
-        }
-        console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer, videoCodec: videoCodec?.mimeType });
-      } catch (err) {
-        console.error('[produce] failed', err);
-        toast('Errore nel publish delle tracce');
-      }
+      if (audioTrack) audioProducer = await sendTransport.produce({ track: audioTrack });
+      if (videoTrack) videoProducer = await sendTransport.produce({ track: videoTrack });
     }
 
-    async function subscribeToProducer(producerId) {
+    async function subscribeToProducer(producerId, remoteSocketId) {
       if (!producerId) return;
       try {
         const { id, kind, rtpParameters } = await consume(producerId);
         const consumer = await recvTransport.consume({ id, producerId, kind, rtpParameters });
         remoteStream.addTrack(consumer.track);
         remoteVideoElem.srcObject = remoteStream;
-        ensurePlayback(remoteVideoElem);
         socket.emit('consumerResume', { consumerId: consumer.id }, (res) => {
-          if (res?.error) console.error('Errore consumerResume:', res.error);
+          if (res?.error) console.error("Errore consumerResume:", res.error);
         });
-        console.log('[consume] ok', { kind });
       } catch (err) {
-        console.error('Errore nella subscribeToProducer:', err);
-        toast('Errore nella sottoscrizione media');
+        console.error("Errore nella subscribeToProducer:", err);
       }
     }
 
@@ -545,8 +513,6 @@
       }
 
       socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
-
-      socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
       uiRoomId.textContent = roomId;
       uiClientType.textContent = clientType;
@@ -575,11 +541,9 @@
       // Trasporti
       sendTransport = await createTransport('send');
       setupTransportListeners(sendTransport, 'send');
-      sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
 
       recvTransport = await createTransport('recv');
       setupTransportListeners(recvTransport, 'recv');
-      recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
 
       // Produce
       await produceTracks();
@@ -592,21 +556,15 @@
 
       // Nuovi producer
       socket.on('newProducer', ({ producerId }) => {
-        // piccolo retry in caso di race condition nel setup del recvTransport
-        const doSub = () => subscribeToProducer(producerId).catch(()=>{});
-        setTimeout(doSub, 0);
-        setTimeout(doSub, 300);
+        subscribeToProducer(producerId);
       });
 
       socket.on('hangup', hangupCall);
       socket.on('connect', () => setStatus(true, 'Connesso'));
-      socket.io.engine.on && socket.io.engine.on('upgrade', () => console.log('[socket] upgraded to WebSocket'));
       socket.on('disconnect', () => setStatus(false, 'Disconnesso'));
 
       // UI
       prejoinBackdrop.style.display = 'none';
-      // Prova a forzare la riproduzione del remoto subito dopo un gesto utente
-      ensurePlayback(remoteVideoElem);
       toast('Videochiamata avviata');
     }
 
@@ -712,7 +670,6 @@
     btnCam.addEventListener('click', () => toggleCam());
     btnSwitchCam.addEventListener('click', () => switchCamera());
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
-    
 
     const openSettingsHandler = () => settingsDlg.showModal();
     btnSettings.addEventListener('click', openSettingsHandler);
@@ -763,23 +720,6 @@
       await enumerateCameras();
       currentVideoDeviceId = videoSourceSelect.value;
       await updatePreview(currentVideoDeviceId);
-    });
-  function ensurePlayback(videoEl) {
-      if (!videoEl) return;
-      const tryPlay = () => {
-        const p = videoEl.play?.();
-        if (p && typeof p.then === 'function') {
-          p.then(() => { btnUnmute.hidden = true; }).catch(() => { btnUnmute.hidden = false; });
-        }
-      };
-      tryPlay();
-      videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
-    }
-
-    btnUnmute.addEventListener('click', () => {
-      // User gesture to unlock autoplay
-      ensurePlayback(remoteVideoElem);
-      toast('Riproduzione sbloccata');
     });
   </script>
 </body>
