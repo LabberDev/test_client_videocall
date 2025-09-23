@@ -225,7 +225,7 @@
 
     <!-- Bottom Controls -->
     <div class="controls" role="toolbar" aria-label="Controlli chiamata">
-      <div class="pill" id="controlsPill">
+      <div class="pill">
         <button class="ctrl-btn" id="btnMic" aria-label="Attiva/Disattiva microfono" aria-pressed="true" title="Microfono">
           <span class="material-symbols-rounded" id="icMic">mic</span>
         </button>
@@ -238,15 +238,15 @@
         <button class="ctrl-btn danger" id="btnHangup" aria-label="Termina chiamata" title="Termina">
           <span class="material-symbols-rounded">call_end</span>
         </button>
-        <button class="ctrl-btn" id="btnUnmute" aria-label="Attiva audio remoto" title="Attiva audio" style="display:none;">
-          <span class="material-symbols-rounded">volume_up</span>
-        </button>
         <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni" title="Impostazioni">
           <span class="material-symbols-rounded">tune</span>
         </button>
+        <button class="ctrl-btn" id="btnUnmute" aria-label="Sblocca riproduzione" title="Sblocca audio/video" hidden>
+          <span class="material-symbols-rounded">volume_up</span>
+        </button>
       </div>
     </div>
-  </div>
+    </div>
 
   <!-- Prejoin Modal -->
   <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
@@ -346,6 +346,9 @@
     const settingsDlg = document.getElementById('settingsDlg');
     const qualitySelect = document.getElementById('quality');
 
+    // Codec preference (can be overridden in Settings in future)
+    let forceCodec = null; // 'h264' | 'vp8' | null
+
     const snackbar = document.getElementById('snackbar');
 
     // --- Stato
@@ -369,17 +372,7 @@
 
     const remoteStream = new MediaStream();
 
-    async function ensurePlayback(videoEl) {
-      try {
-        videoEl.muted = false; // vogliamo l'audio remoto
-        const playPromise = videoEl.play();
-        if (playPromise) await playPromise;
-        btnUnmute.style.display = 'none';
-      } catch (e) {
-        // Autoplay policy ha bloccato: mostra pulsante
-        btnUnmute.style.display = 'grid';
-      }
-    }
+    
 
     // --- Helpers server RPC (socket.io a server remoto)
     const serverURL = "https://videocall.webcheckin.cloud:4000";
@@ -497,16 +490,26 @@
       const audioTrack = localStream.getAudioTracks()[0];
       const videoTrack = localStream.getVideoTracks()[0];
 
-      // Preferenze codec per massima compatibilità desktop (Safari/HW accel)
-      const caps = device.rtpCapabilities;
-      const preferH264 = caps?.codecs?.find(c => /video\/h264/i.test(c.mimeType));
-      const preferVP8  = caps?.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
-      const videoCodec = preferH264 || preferVP8 || undefined;
-      const opus       = caps?.codecs?.find(c => /audio\/opus/i.test(c.mimeType));
+      const caps = device?.rtpCapabilities || {};
+      let videoCodec;
+      if (forceCodec === 'h264') {
+        videoCodec = caps.codecs?.find(c => /video\/h264/i.test(c.mimeType));
+      } else if (forceCodec === 'vp8') {
+        videoCodec = caps.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
+      } else {
+        const preferH264 = caps.codecs?.find(c => /video\/h264/i.test(c.mimeType));
+        const preferVP8  = caps.codecs?.find(c => /video\/vp8/i.test(c.mimeType));
+        videoCodec = preferH264 || preferVP8;
+      }
+      const opus = caps.codecs?.find(c => /audio\/opus/i.test(c.mimeType));
 
       try {
-        if (audioTrack) audioProducer = await sendTransport.produce({ track: audioTrack, codec: opus });
-        if (videoTrack) videoProducer = await sendTransport.produce({ track: videoTrack, codec: videoCodec });
+        if (audioTrack) {
+          audioProducer = await sendTransport.produce({ track: audioTrack, codec: opus });
+        }
+        if (videoTrack) {
+          videoProducer = await sendTransport.produce({ track: videoTrack, codec: videoCodec });
+        }
         console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer, videoCodec: videoCodec?.mimeType });
       } catch (err) {
         console.error('[produce] failed', err);
@@ -514,7 +517,7 @@
       }
     }
 
-    async function subscribeToProducer(producerId, remoteSocketId) {
+    async function subscribeToProducer(producerId) {
       if (!producerId) return;
       try {
         const { id, kind, rtpParameters } = await consume(producerId);
@@ -523,10 +526,12 @@
         remoteVideoElem.srcObject = remoteStream;
         ensurePlayback(remoteVideoElem);
         socket.emit('consumerResume', { consumerId: consumer.id }, (res) => {
-          if (res?.error) console.error("Errore consumerResume:", res.error);
+          if (res?.error) console.error('Errore consumerResume:', res.error);
         });
+        console.log('[consume] ok', { kind });
       } catch (err) {
-        console.error("Errore nella subscribeToProducer:", err);
+        console.error('Errore nella subscribeToProducer:', err);
+        toast('Errore nella sottoscrizione media');
       }
     }
 
@@ -587,11 +592,15 @@
 
       // Nuovi producer
       socket.on('newProducer', ({ producerId }) => {
-        subscribeToProducer(producerId);
+        // piccolo retry in caso di race condition nel setup del recvTransport
+        const doSub = () => subscribeToProducer(producerId).catch(()=>{});
+        setTimeout(doSub, 0);
+        setTimeout(doSub, 300);
       });
 
       socket.on('hangup', hangupCall);
       socket.on('connect', () => setStatus(true, 'Connesso'));
+      socket.io.engine.on && socket.io.engine.on('upgrade', () => console.log('[socket] upgraded to WebSocket'));
       socket.on('disconnect', () => setStatus(false, 'Disconnesso'));
 
       // UI
@@ -703,7 +712,7 @@
     btnCam.addEventListener('click', () => toggleCam());
     btnSwitchCam.addEventListener('click', () => switchCamera());
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
-    btnUnmute.addEventListener('click', () => ensurePlayback(remoteVideoElem));
+    
 
     const openSettingsHandler = () => settingsDlg.showModal();
     btnSettings.addEventListener('click', openSettingsHandler);
@@ -754,6 +763,23 @@
       await enumerateCameras();
       currentVideoDeviceId = videoSourceSelect.value;
       await updatePreview(currentVideoDeviceId);
+    });
+  function ensurePlayback(videoEl) {
+      if (!videoEl) return;
+      const tryPlay = () => {
+        const p = videoEl.play?.();
+        if (p && typeof p.then === 'function') {
+          p.then(() => { btnUnmute.hidden = true; }).catch(() => { btnUnmute.hidden = false; });
+        }
+      };
+      tryPlay();
+      videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
+    }
+
+    btnUnmute.addEventListener('click', () => {
+      // User gesture to unlock autoplay
+      ensurePlayback(remoteVideoElem);
+      toast('Riproduzione sbloccata');
     });
   </script>
 </body>
