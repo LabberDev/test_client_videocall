@@ -194,7 +194,7 @@
     <main class="main" role="main">
       <section class="panel stage" aria-label="Griglia video">
         <div class="tile" id="localTile">
-          <video id="localVideo" autoplay muted playsinline class="mirror"></video>
+          <video id="localVideo" autoplay muted playsinline></video>
           <div class="badge">Tu</div>
           <div class="muted-indicator" id="micBadgeLocal" title="Microfono disattivato" hidden>
             <span class="material-symbols-rounded">mic_off</span>
@@ -250,7 +250,7 @@
     <div class="prejoin" id="prejoin">
       <div class="preview">
         <div class="tile">
-          <video id="prejoinPreview" autoplay muted playsinline class="mirror"></video>
+          <video id="prejoinPreview" autoplay muted playsinline></video>
           <div class="badge">Anteprima</div>
         </div>
       </div>
@@ -348,7 +348,20 @@
     let socket, device, sendTransport, recvTransport, localStream, previewStream;
     let audioProducer, videoProducer;
     let currentVideoDeviceId = '';
-    let desiredWidth = 1280, desiredHeight = 720;
+      let desiredWidth = 1280, desiredHeight = 720;
+      const deviceLabelMap = new Map();
+      function isRearFromTrackOrLabel(track, deviceId) {
+        try {
+          const fm = track?.getSettings?.().facingMode;
+          if (fm) return fm === 'environment';
+        } catch {}
+        const label = (deviceLabelMap.get(deviceId) || '').toLowerCase();
+        return /(back|rear|environment|tele|wide|ultra)/.test(label);
+      }
+      function setMirror(elem, isRear) {
+        // mirror only for front camera
+        elem.classList.toggle('mirror', !isRear);
+      }
 
     const remoteStream = new MediaStream();
 
@@ -413,6 +426,7 @@
       const fillSelect = (sel) => {
         sel.innerHTML = '';
         videoDevices.forEach((d, i) => {
+          deviceLabelMap.set(d.deviceId, d.label || '');
           const opt = document.createElement('option');
           opt.value = d.deviceId;
           opt.textContent = d.label || `Fotocamera ${i + 1}`;
@@ -446,6 +460,8 @@
         previewStream = await getUserMediaFor(deviceId || currentVideoDeviceId, true);
         const onlyVideo = new MediaStream(previewStream.getVideoTracks());
         prejoinPreview.srcObject = onlyVideo;
+        const vtrackPrev = previewStream.getVideoTracks()[0];
+        setMirror(prejoinPreview, isRearFromTrackOrLabel(vtrackPrev, deviceId || currentVideoDeviceId));
       } catch (e) { console.warn('Anteprima non disponibile:', e); }
     }
 
@@ -455,6 +471,8 @@
       currentVideoDeviceId = selId || currentVideoDeviceId;
       const preview = new MediaStream(stream.getVideoTracks());
       localVideoElem.srcObject = preview;
+      const vtrackLocal = stream.getVideoTracks()[0];
+      setMirror(localVideoElem, isRearFromTrackOrLabel(vtrackLocal, currentVideoDeviceId));
       return stream;
     }
 
@@ -603,6 +621,7 @@
         localStream.addTrack(newTrack);
         // update local preview element
         localVideoElem.srcObject = new MediaStream([newTrack]);
+        setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, newId));
       }
 
       currentVideoDeviceId = newId;
@@ -673,6 +692,7 @@
         localStream.getVideoTracks().forEach(t => t.stop());
         localStream = new MediaStream([newTrack, ...(localStream.getAudioTracks() || [])]);
         localVideoElem.srcObject = new MediaStream([newTrack]);
+        setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, currentVideoDeviceId));
         toast('Qualità video aggiornata');
       }
     });
