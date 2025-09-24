@@ -245,9 +245,12 @@
         <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni" title="Impostazioni">
           <span class="material-symbols-rounded">tune</span>
         </button>
+        <button class="ctrl-btn" id="btnUnmute" aria-label="Sblocca riproduzione" title="Sblocca audio/video" hidden>
+          <span class="material-symbols-rounded">volume_up</span>
+        </button>
       </div>
     </div>
-  </div>
+    </div>
 
   <!-- Prejoin Modal -->
   <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
@@ -342,15 +345,21 @@
     const btnSwitchCam = document.getElementById('btnSwitchCam');
     const btnHangup = document.getElementById('btnHangup');
     const btnSettings = document.getElementById('btnSettings');
+    const btnUnmute = document.getElementById('btnUnmute');
     const openSettings = document.getElementById('openSettings');
     const settingsDlg = document.getElementById('settingsDlg');
     const qualitySelect = document.getElementById('quality');
+
+    // Codec preference (can be overridden in Settings in future)
+    let forceCodec = null; // 'h264' | 'vp8' | null
 
     const snackbar = document.getElementById('snackbar');
 
     // --- Stato
     let socket, device, sendTransport, recvTransport, localStream, previewStream;
     let audioProducer, videoProducer;
+    const ownProducerIds = new Set();
+    const consumedProducerIds = new Set();
     let currentVideoDeviceId = '';
       let desiredWidth = 1280, desiredHeight = 720;
       const deviceLabelMap = new Map();
@@ -368,6 +377,8 @@
       }
 
     const remoteStream = new MediaStream();
+
+    
 
     // --- Helpers server RPC (socket.io a server remoto)
     const serverURL = "https://videocall.webcheckin.cloud:4000";
@@ -484,22 +495,64 @@
       if (!sendTransport || !localStream) return;
       const audioTrack = localStream.getAudioTracks()[0];
       const videoTrack = localStream.getVideoTracks()[0];
-      if (audioTrack) audioProducer = await sendTransport.produce({ track: audioTrack });
-      if (videoTrack) videoProducer = await sendTransport.produce({ track: videoTrack });
+
+      // 1) Prova standard senza forzare codec (più compatibile su desktop)
+      try {
+        if (audioTrack && !audioProducer) audioProducer = await sendTransport.produce({ track: audioTrack });
+      } catch (err) {
+        console.warn('[produce] audio default failed', err?.message || err);
+      }
+      try {
+        if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack });
+      } catch (err) {
+        console.warn('[produce] video default failed', err?.message || err);
+        // 2) Fallback: prova VP8 poi H264 se disponibili
+        try {
+          const caps = device?.rtpCapabilities || {};
+          const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
+          const vp8 = vCodecs.find(c => /video\/vp8/i.test(c.mimeType));
+          const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
+          const candidates = [vp8, h264].filter(Boolean);
+          for (const codec of candidates) {
+            try {
+              videoProducer = await sendTransport.produce({ track: videoTrack, codec });
+              console.log('[produce] video fallback OK with', codec?.mimeType);
+              break;
+            } catch (e2) {
+              console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2);
+            }
+          }
+        } catch {}
+        if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
+      }
+
+      // Traccia gli ID dei nostri producer per evitare self-subscribe
+      if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
+      if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
+      console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
     }
 
-    async function subscribeToProducer(producerId, remoteSocketId) {
+    async function subscribeToProducer(producerId) {
+      // Skip if it's our own producer or already consumed
+      if (!producerId || ownProducerIds.has(producerId) || consumedProducerIds.has(producerId)) return;
       if (!producerId) return;
       try {
         const { id, kind, rtpParameters } = await consume(producerId);
         const consumer = await recvTransport.consume({ id, producerId, kind, rtpParameters });
+        // Ensure only one track per kind in the remote stream
+        if (kind === 'video') remoteStream.getVideoTracks().forEach(t => remoteStream.removeTrack(t));
+        if (kind === 'audio') remoteStream.getAudioTracks().forEach(t => remoteStream.removeTrack(t));
         remoteStream.addTrack(consumer.track);
+        consumedProducerIds.add(producerId);
         remoteVideoElem.srcObject = remoteStream;
+        ensurePlayback(remoteVideoElem);
         socket.emit('consumerResume', { consumerId: consumer.id }, (res) => {
-          if (res?.error) console.error("Errore consumerResume:", res.error);
+          if (res?.error) console.error('Errore consumerResume:', res.error);
         });
+        console.log('[consume] ok', { kind });
       } catch (err) {
-        console.error("Errore nella subscribeToProducer:", err);
+        console.error('Errore nella subscribeToProducer:', err);
+        toast('Errore nella sottoscrizione media');
       }
     }
 
@@ -513,6 +566,8 @@
       }
 
       socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
+
+      socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
       uiRoomId.textContent = roomId;
       uiClientType.textContent = clientType;
@@ -541,9 +596,11 @@
       // Trasporti
       sendTransport = await createTransport('send');
       setupTransportListeners(sendTransport, 'send');
+      sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
 
       recvTransport = await createTransport('recv');
       setupTransportListeners(recvTransport, 'recv');
+      recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
 
       // Produce
       await produceTracks();
@@ -556,15 +613,21 @@
 
       // Nuovi producer
       socket.on('newProducer', ({ producerId }) => {
-        subscribeToProducer(producerId);
+        // piccolo retry in caso di race condition nel setup del recvTransport
+        const doSub = () => subscribeToProducer(producerId).catch(()=>{});
+        setTimeout(doSub, 0);
+        setTimeout(doSub, 300);
       });
 
       socket.on('hangup', hangupCall);
       socket.on('connect', () => setStatus(true, 'Connesso'));
+      socket.io.engine.on && socket.io.engine.on('upgrade', () => console.log('[socket] upgraded to WebSocket'));
       socket.on('disconnect', () => setStatus(false, 'Disconnesso'));
 
       // UI
       prejoinBackdrop.style.display = 'none';
+      // Prova a forzare la riproduzione del remoto subito dopo un gesto utente
+      ensurePlayback(remoteVideoElem);
       toast('Videochiamata avviata');
     }
 
@@ -642,6 +705,8 @@
         if (recvTransport) { recvTransport.close(); recvTransport = null; }
         if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
         if (socket) { socket.disconnect(); socket = null; }
+        ownProducerIds.clear();
+        consumedProducerIds.clear();
         localVideoElem.srcObject = null;
         remoteVideoElem.srcObject = null;
         setStatus(false, 'Terminata');
@@ -649,7 +714,7 @@
         updatePreview(currentVideoDeviceId);
         toast('Chiamata terminata');
       } catch (e) {
-        console.error("Errore in hangup:", e);
+        console.error('Errore in hangup:', e);
       }
     }
 
@@ -670,6 +735,7 @@
     btnCam.addEventListener('click', () => toggleCam());
     btnSwitchCam.addEventListener('click', () => switchCamera());
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
+    
 
     const openSettingsHandler = () => settingsDlg.showModal();
     btnSettings.addEventListener('click', openSettingsHandler);
@@ -720,6 +786,23 @@
       await enumerateCameras();
       currentVideoDeviceId = videoSourceSelect.value;
       await updatePreview(currentVideoDeviceId);
+    });
+  function ensurePlayback(videoEl) {
+      if (!videoEl) return;
+      const tryPlay = () => {
+        const p = videoEl.play?.();
+        if (p && typeof p.then === 'function') {
+          p.then(() => { btnUnmute.hidden = true; }).catch(() => { btnUnmute.hidden = false; });
+        }
+      };
+      tryPlay();
+      videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
+    }
+
+    btnUnmute.addEventListener('click', () => {
+      // User gesture to unlock autoplay
+      ensurePlayback(remoteVideoElem);
+      toast('Riproduzione sbloccata');
     });
   </script>
 </body>
