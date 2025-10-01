@@ -565,7 +565,18 @@
         return;
       }
 
-      socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
+      socket = io(serverURL, {
+        query: { roomId, authToken: token, clientType },
+        path: '/socket.io',                 // esplicito, default ma meglio metterlo
+        transports: ['polling', 'websocket'], // parti in polling, poi upgrade a WS
+        allowEIO3: true,                    // compat con server Engine.IO v3
+        perMessageDeflate: false,           // evita edge-case con compressione
+        reconnection: true,
+        reconnectionDelay: 500,
+        reconnectionDelayMax: 2000,
+        timeout: 7000,
+        withCredentials: true
+      });
 
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
