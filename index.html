@@ -382,6 +382,8 @@
 
     // --- Helpers server RPC (socket.io a server remoto)
     const serverURL = "https://videocall.webcheckin.cloud:4000";
+    const sameOrigin = location.origin === new URL(serverURL).origin;
+    const isNativeLike = location.protocol === 'capacitor:' || location.protocol === 'ionic:' || location.origin === 'null';
 
     const joinRoom = (roomId, clientType, token) => new Promise((resolve, reject) => {
       socket.emit('joinRoom', { roomId, clientType, token }, (params) => {
@@ -565,18 +567,20 @@
         return;
       }
 
-      socket = io(serverURL, {
-        query: { roomId, authToken: token, clientType },
-        path: '/socket.io',                 // esplicito, default ma meglio metterlo
-        transports: ['polling', 'websocket'], // parti in polling, poi upgrade a WS
-        allowEIO3: true,                    // compat con server Engine.IO v3
-        perMessageDeflate: false,           // evita edge-case con compressione
+      const socket = io(serverURL, {
+        path: '/socket.io',
+        transports: sameOrigin ? ['websocket','polling'] : ['websocket'],
+        withCredentials: sameOrigin,   // true solo se same-origin
         reconnection: true,
         reconnectionDelay: 500,
         reconnectionDelayMax: 2000,
         timeout: 7000,
-        withCredentials: true
+        query: { roomId, authToken: token, clientType }
       });
+
+      // opzionale: attendi il connect prima delle RPC con ack
+      const waitForConnect = s => new Promise(res => s.connected ? res() : s.once('connect', res));
+      await waitForConnect(socket);
 
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
