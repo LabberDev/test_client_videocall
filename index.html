@@ -567,15 +567,14 @@
         return;
       }
 
-      const socket = io(serverURL, {
+      socket = io(serverURL, {
         path: '/socket.io',
-        transports: sameOrigin ? ['websocket','polling'] : ['websocket'],
-        withCredentials: sameOrigin,   // true solo se same-origin
+        transports: ['websocket'],   // evita il polling
         reconnection: true,
         reconnectionDelay: 500,
         reconnectionDelayMax: 2000,
-        timeout: 7000,
-        query: { roomId, authToken: token, clientType }
+        timeout: 7000
+        // withCredentials: non serve se usi i token in query
       });
 
       // opzionale: attendi il connect prima delle RPC con ack
