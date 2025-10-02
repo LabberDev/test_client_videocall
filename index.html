@@ -571,6 +571,10 @@
         // transports: ['polling', 'websocket'] // opzionale; default va già bene
       });
 
+      // opzionale: attendi il connect prima delle RPC con ack
+      const waitForConnect = s => new Promise(res => s.connected ? res() : s.once('connect', res));
+      await waitForConnect(socket);
+
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
       uiRoomId.textContent = roomId;
