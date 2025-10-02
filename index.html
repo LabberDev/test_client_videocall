@@ -565,7 +565,11 @@
         return;
       }
 
-      socket = io(serverURL, { query: { roomId, authToken: token, clientType }, transports: ['websocket'] });
+      socket = io(serverURL, {
+        query: { roomId, authToken: token, clientType },
+        // path: '/socket.io/',   // vedi punto 2
+        // transports: ['polling', 'websocket'] // opzionale; default va già bene
+      });
 
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
 
