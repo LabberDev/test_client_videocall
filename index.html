@@ -1,182 +1,227 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="it" data-theme="dark">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Videocall • Meet‑style UI</title>
+  <title>Videocall • Meet‑style UI (Enhanced)</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <style>
+    /* THEME TOKENS */
     :root {
       --bg: #0b0f14;
-      --surface: #151b22;
-      --surface-2: #1b232d;
+      --surface: #11161c;
+      --surface-2: #161d25;
+      --surface-3: #202833;
       --text: #e7eef7;
       --text-dim: #b7c2cf;
       --primary: #5c9dff;
       --danger: #ff5c7a;
       --ok: #3ddc97;
       --warn: #ffce5c;
-      --shadow: 0 6px 24px rgba(0, 0, 0, .35);
       --radius: 16px;
+      --shadow-sm: 0 2px 10px rgba(0, 0, 0, .25);
+      --shadow: 0 8px 28px rgba(0, 0, 0, .35);
       --ring: 0 0 0 2px rgba(92, 157, 255, .45);
+      --glass: rgba(255, 255, 255, .06);
+      --gap: 12px;
+      --tile-aspect: 16 / 9;
     }
 
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fb;
+        --surface: #ffffff;
+        --surface-2: #f4f7fb;
+        --surface-3: #e9eef6;
+        --text: #0f1720;
+        --text-dim: #425269;
+        --primary: #336fff;
+        --danger: #e53955;
+        --ok: #16a379;
+        --warn: #f59e0b;
+        --glass: rgba(15, 23, 32, .06);
+        --shadow: 0 8px 28px rgba(15, 23, 32, .12);
+      }
     }
 
-    html, body {
-      height: 100%;
-      background: var(--bg);
+    [data-theme="light"] {
+      --bg: #f6f8fb;
+      --surface: #ffffff;
+      --surface-2: #f4f7fb;
+      --surface-3: #e9eef6;
+      --text: #0f1720;
+      --text-dim: #425269;
+      --primary: #336fff;
+      --danger: #e53955;
+      --ok: #16a379;
+      --warn: #f59e0b;
+      --glass: rgba(15, 23, 32, .06);
+      --shadow: 0 8px 28px rgba(15, 23, 32, .12);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(92,157,255,.12), transparent 40%),
+                  radial-gradient(1000px 700px at 10% 110%, rgba(61,220,151,.10), transparent 40%),
+                  var(--bg);
       color: var(--text);
       font-family: Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
       line-height: 1.5;
+      letter-spacing: .2px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-
-    body { margin: 0; }
 
     button, input, select { font: inherit; color: inherit; }
 
-    .app {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 100svh;
-    }
+    .app { display: grid; grid-template-rows: auto 1fr auto; min-height: 100svh; }
 
     /* Top App Bar */
     .topbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: flex; align-items: center; gap: 12px;
       padding: 12px clamp(12px, 3vw, 24px);
-      background: linear-gradient(180deg, rgba(21,27,34,.9), rgba(21,27,34,.7));
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      position: sticky;
-      top: 0; z-index: 30;
-      backdrop-filter: blur(10px);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--surface), transparent 25%), transparent);
+      border-bottom: 1px solid var(--glass);
+      position: sticky; top: 0; z-index: 30; backdrop-filter: blur(10px);
     }
-    .brand {
-      display: flex; align-items: center; gap: 10px;
-      font-weight: 700; letter-spacing: .2px;
-    }
-    .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 4px rgba(61,220,151,.15); }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
+    .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 6px color-mix(in oklab, var(--ok), transparent 80%); }
+    .brand .name { opacity: .95 }
     .spacer { flex: 1; }
-    .top-actions { display:flex; gap:8px; align-items:center; }
+
+    .chip {
+      display: inline-flex; gap: 8px; align-items: center;
+      padding: 8px 12px; border-radius: 999px; background: var(--surface-2);
+      border: 1px solid var(--glass); box-shadow: var(--shadow-sm);
+    }
+
+    .top-actions { display: flex; gap: 8px; align-items: center; }
+
+    .icon-btn {
+      --size: 40px; width: var(--size); height: var(--size);
+      display: grid; place-items: center; border-radius: 10px; cursor: pointer;
+      border: 1px solid var(--glass); background: var(--surface-2);
+      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+    }
+    .icon-btn:hover { box-shadow: var(--ring); }
+    .icon-btn:active { transform: scale(.96); }
+    .icon-btn[aria-pressed="true"] { box-shadow: var(--ring); }
 
     /* Main */
-    .main {
-      display: grid;
-      grid-template-columns: 1fr minmax(0, 320px);
-      gap: 12px;
-      padding: 12px;
-    }
-    .panel {
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      min-height: 0;
-    }
+    .main { display: grid; grid-template-columns: 1fr minmax(300px, 340px); gap: var(--gap); padding: var(--gap); }
+    .panel { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); min-height: 0; border: 1px solid var(--glass); }
 
-    /* Stage: video grid */
-    .stage {
-      position: relative;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-    .tile {
-      position: relative;
-      border-radius: calc(var(--radius) - 6px);
-      overflow: hidden;
-      background: #000;
-      isolation: isolate;
-      min-height: 220px;
-    }
+    /* Stage: responsive video grid */
+    .stage { position: relative; padding: var(--gap); display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--gap); }
+
+    .tile { position: relative; border-radius: clamp(10px, calc(var(--radius) - 6px), 18px); overflow: hidden; background: #000; isolation: isolate; min-height: 220px; aspect-ratio: var(--tile-aspect); outline: none; }
+    .tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 75%); pointer-events: none; }
+    .tile:focus-visible { box-shadow: var(--ring); }
+
     video { width: 100%; height: 100%; display: block; object-fit: cover; background: #000; }
     .mirror { transform: scaleX(-1); }
-    .badge {
-      position: absolute; left: 12px; bottom: 12px;
-      padding: 6px 10px; border-radius: 999px;
-      background: rgba(0,0,0,.45); color: #fff; font-size: .9rem; backdrop-filter: blur(6px);
-      border: 1px solid rgba(255,255,255,.1);
-    }
-    .muted-indicator { position:absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.45); border-radius: 50%; width: 36px; height: 36px; display:grid; place-items:center; }
 
-    /* Right side panel (collapsible) */
-    .side {
-      display: grid; grid-template-rows: auto 1fr;
-    }
-    .side header { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,.06); font-weight: 600; }
+    /* Live badges */
+    .badge { position: absolute; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font-size: .9rem; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.12); box-shadow: var(--shadow-sm); }
+    .muted-indicator { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.48); border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.1); box-shadow: var(--shadow-sm); }
+
+    /* Active speaker hook (toggle by adding data-speaking="true" to .tile) */
+    .tile[data-speaking="true"] { box-shadow: 0 0 0 2px color-mix(in oklab, var(--ok), white 15%), 0 0 0 8px color-mix(in oklab, var(--ok), transparent 85%), var(--shadow); }
+
+    /* Side panel */
+    .side { display: grid; grid-template-rows: auto 1fr; }
+    .side header { padding: 12px 14px; border-bottom: 1px solid var(--glass); font-weight: 700; }
     .side .content { padding: 12px; overflow: auto; color: var(--text-dim); }
+    .kv { display: grid; gap: 6px; }
+    .kv label { color: var(--text-dim); font-size: .9rem; }
 
     /* Bottom Controls */
-    .controls {
-      position: sticky; bottom: 0;
-      padding: max(8px, env(safe-area-inset-bottom));
-      display: flex; justify-content: center; gap: 10px;
-      background: linear-gradient(0deg, rgba(21,27,34,.9), rgba(21,27,34,0));
-      z-index: 20;
-    }
-    .pill {
-      display:flex; gap:8px; padding: 10px; background: var(--surface); border-radius: 999px; box-shadow: var(--shadow);
-      border: 1px solid rgba(255,255,255,.06);
-    }
-    .ctrl-btn {
-      --size: 48px;
-      width: var(--size); height: var(--size); border-radius: 999px; border: 1px solid rgba(255,255,255,.08);
-      background: var(--surface-2); display:grid; place-items:center; cursor:pointer;
-      transition: transform .06s ease;
-    }
+    .controls { position: sticky; bottom: 0; padding: max(8px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 10px; background: linear-gradient(0deg, color-mix(in oklab, var(--surface), transparent 15%), transparent); z-index: 20; }
+
+    .pill { display: flex; gap: 8px; padding: 10px; background: color-mix(in oklab, var(--surface), #000 4%); border-radius: 999px; box-shadow: var(--shadow); border: 1px solid var(--glass); backdrop-filter: blur(8px); }
+
+    .ctrl-btn { --size: 52px; width: var(--size); height: var(--size); border-radius: 999px; border: 1px solid var(--glass); background: var(--surface-2); display: grid; place-items: center; cursor: pointer; transition: transform .06s ease, box-shadow .2s ease, background .2s ease; }
+    .ctrl-btn:hover { box-shadow: var(--ring); }
     .ctrl-btn:active { transform: scale(.97); }
-    .ctrl-btn[aria-pressed="true"] { outline: none; box-shadow: var(--ring); }
-    .ctrl-btn.danger { background: var(--danger); border-color: rgba(0,0,0,.2); }
+    .ctrl-btn[aria-pressed="true"] { box-shadow: var(--ring); }
+    .ctrl-btn.danger { background: var(--danger); border-color: rgba(0,0,0,.15); color: #fff; }
     .ctrl-btn .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
 
     /* Prejoin Sheet */
-    .prejoin-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 50; }
-    .prejoin {
-      width: min(920px, 92vw);
-      max-height: 90vh;
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      display: grid; grid-template-columns: 1fr 360px;
-    }
-    .preview {
-      max-height: 45vh;
-    }
-    .prejoin .preview { background: #000; min-height: 260px; }
-    .prejoin .form { padding: 16px; border-left: 1px solid rgba(255,255,255,.06); display: grid; gap: 10px; }
+    .prejoin-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .6); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 50; }
+    .prejoin { width: min(980px, 94vw); max-height: 90vh; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-columns: 1fr 360px; border: 1px solid var(--glass); }
+    .preview { max-height: 48vh; background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); }
+    .prejoin .preview { min-height: 280px; }
+    .prejoin .form { padding: 16px; border-left: 1px solid var(--glass); display: grid; gap: 12px; }
+
     .field { display: grid; gap: 6px; }
     .field label { color: var(--text-dim); font-size: .9rem; }
-    .input, .select { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,.12); background: var(--surface-2); color: var(--text); }
-    .btn-primary { padding: 12px 14px; background: var(--primary); border: none; color: #00122b; border-radius: 12px; cursor: pointer; font-weight: 700; }
-    .btn-secondary { padding: 10px 12px; background: var(--surface-2); border: 1px solid rgba(255,255,255,.12); color: var(--text); border-radius: 10px; cursor: pointer; }
-    .hstack { display:flex; gap: 8px; align-items:center; }
-    .preview .tile { height: 100%; border-radius: 0; }
+    .input, .select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--glass); background: var(--surface-2); color: var(--text); }
+
+    .btn-primary { padding: 12px 14px; background: var(--primary); border: none; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; letter-spacing: .2px; box-shadow: 0 8px 24px color-mix(in oklab, var(--primary), transparent 75%); transition: transform .06s ease, box-shadow .2s ease; }
+    .btn-primary:hover { box-shadow: 0 10px 30px color-mix(in oklab, var(--primary), transparent 68%); }
+    .btn-primary:active { transform: translateY(1px); }
+
+    .btn-secondary { padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--glass); color: var(--text); border-radius: 10px; cursor: pointer; }
+
+    .hstack { display: flex; gap: 8px; align-items: center; text-align: center; }
+
+    .preview .tile { height: 100%; border-radius: 0; aspect-ratio: var(--tile-aspect); }
 
     /* Snackbar */
-    .snackbar { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: #1f2937; color: #fff; padding: 10px 14px; border-radius: 12px; box-shadow: var(--shadow); opacity: 0; pointer-events:none; transition: opacity .2s ease, transform .2s ease; z-index: 60; }
+    .snackbar { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--surface-3); color: var(--text); padding: 10px 14px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--glass); opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 60; }
     .snackbar.show { opacity: 1; }
 
-    /* Responsive */
+    /* Split button fotocamera (prejoin) */
+    .split { width: 220px; display: inline-flex; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--glass); background: var(--surface-2); }
+    .btn-split { padding: 10px 12px; background: transparent; border: 0; color: var(--text); cursor: pointer; transition: filter .2s ease; }
+    .btn-split:hover { filter: brightness(1.05); }
+    .btn-split:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 10px; }
+    .split-left { border-right: 1px solid var(--glass); background: linear-gradient(180deg, color-mix(in oklab, var(--surface-3), white 3%), color-mix(in oklab, var(--surface-3), black 4%)); }
+    .split-right[aria-pressed="false"] { opacity: .7; }
+
+    .menu { position: absolute; top: 100%; margin-top: 8px; left: 0; min-width: 260px; background: var(--surface); border: 1px solid var(--glass); border-radius: 12px; box-shadow: var(--shadow); z-index: 70; padding: 6px; }
+    .menu button { width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: 0; color: var(--text); border-radius: 8px; cursor: pointer; }
+    .menu button:hover, .menu button:focus { outline: none; background: var(--surface-2); }
+
+    /* Mobile */
     @media (max-width: 1024px) {
       .main { grid-template-columns: 1fr; }
       .side { display: none; }
       .stage { grid-template-columns: 1fr; }
       .prejoin { grid-template-columns: 1fr; }
-      .prejoin .form { border-left: 0; border-top: 1px solid rgba(255,255,255,.06); }
+      .prejoin .form { border-left: 0; border-top: 1px solid var(--glass); }
+      .ctrl-btn { --size: 48px; }
     }
 
+    /* Mobile prejoin: verticale, sfondo bianco dietro */
+    @media (max-width: 640px) {
+      .prejoin-backdrop { background: #fff !important; backdrop-filter: none !important; }
+      .prejoin { background: var(--surface); }
+      .preview { height: 32svh !important; display: grid; place-items: center; padding: 0 12px; contain: layout; }
+      .preview .tile { width: clamp(240px, 88vw, 360px); aspect-ratio: 9 / 16; border-radius: 14px; margin: 0 auto; overflow: hidden; box-shadow: var(--shadow); }
+      #prejoinPreview { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+      .menu { min-width: 88vw; left: 50%; transform: translateX(-50%); }
+    }
+      .prejoin { background: var(--surface); }
+      .preview { max-height: 30vh !important; display: grid; place-items: center; padding: 0 12px; }
+      .preview .tile { aspect-ratio: 11 / 16; border-radius: 12px; margin: 0 auto; overflow: hidden; }
+      #prejoinPreview { width: 100%; height: 100%; object-fit: cover; }
+      .menu { min-width: 88vw; left: 50%; transform: translateX(-50%); }
+    }
+
+    /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       * { transition: none !important; animation: none !important; }
     }
+      /* Cam menu chevron animation */
+    #btnCamMenu { position: relative; }
+    #btnCamMenu .material-symbols-rounded { transition: transform .2s ease; }
+    #btnCamMenu[aria-expanded="true"] .material-symbols-rounded { transform: rotate(180deg); }
   </style>
 </head>
 
@@ -186,10 +231,14 @@
     <header class="topbar" role="banner">
       <div class="brand" aria-label="App status">
         <span class="dot" id="statusDot" title="Stato connessione"></span>
-        <span>Videocall</span>
+        <span class="name">Videocall</span>
       </div>
       <div class="spacer"></div>
       <div class="top-actions">
+        <span class="chip" title="ID stanza"><span class="material-symbols-rounded" aria-hidden="true">meeting_room</span><span id="chipRoom">—</span></span>
+        <button class="icon-btn" id="toggleTheme" aria-label="Cambia tema" title="Cambia tema">
+          <span class="material-symbols-rounded">light_mode</span>
+        </button>
         <button class="btn-secondary" id="openSettings"><span class="material-symbols-rounded" aria-hidden="true">tune</span> Impostazioni</button>
       </div>
     </header>
@@ -197,14 +246,14 @@
     <!-- Main area -->
     <main class="main" role="main">
       <section class="panel stage" aria-label="Griglia video">
-        <div class="tile" id="localTile">
+        <div class="tile" id="localTile" tabindex="0">
           <video id="localVideo" autoplay muted playsinline></video>
           <div class="badge">Tu</div>
           <div class="muted-indicator" id="micBadgeLocal" title="Microfono disattivato" hidden>
             <span class="material-symbols-rounded">mic_off</span>
           </div>
         </div>
-        <div class="tile" id="remoteTile">
+        <div class="tile" id="remoteTile" tabindex="0">
           <video id="remoteVideo" autoplay playsinline></video>
           <div class="badge" id="remoteLabel">Ospite</div>
           <div class="muted-indicator" id="micBadgeRemote" hidden>
@@ -216,13 +265,11 @@
       <aside class="panel side" aria-label="Pannello laterale" id="sidePanel">
         <header>Dettagli riunione</header>
         <div class="content">
-          <div class="field"><label>Room ID</label><div id="uiRoomId" style="font-weight:600;"></div></div>
-          <div class="field"><label>Client</label><div id="uiClientType"></div></div>
-          <div class="field"><label>Stato</label><div id="uiStatus">Non connesso</div></div>
-          <hr style="border-color: rgba(255,255,255,.06); margin: 12px 0;">
-          <div style="font-size:.9rem; color: var(--text-dim)">Suggerimento: puoi passare i parametri via URL, es.
-            <code>?roomId=room789_1&amp;clientType=guest&amp;token=guest_1</code>
-          </div>
+          <div class="kv"><label>Room ID</label><div id="uiRoomId" style="font-weight:600;"></div></div>
+          <div class="kv"><label>Client</label><div id="uiClientType"></div></div>
+          <div class="kv"><label>Stato</label><div id="uiStatus">Non connesso</div></div>
+          <hr style="border-color: var(--glass); margin: 12px 0;">
+          <div style="font-size:.9rem; color: var(--text-dim)">Suggerimento: puoi passare i parametri via URL, es. <code>?roomId=room789_1&amp;clientType=guest&amp;token=guest_1</code></div>
         </div>
       </aside>
     </main>
@@ -245,12 +292,10 @@
         <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni" title="Impostazioni">
           <span class="material-symbols-rounded">tune</span>
         </button>
-        <button class="ctrl-btn" id="btnUnmute" aria-label="Sblocca riproduzione" title="Sblocca audio/video" hidden>
-          <span class="material-symbols-rounded">volume_up</span>
-        </button>
+        
       </div>
     </div>
-    </div>
+  </div>
 
   <!-- Prejoin Modal -->
   <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
@@ -258,32 +303,24 @@
       <div class="preview">
         <div class="tile">
           <video id="prejoinPreview" autoplay muted playsinline></video>
-          <div class="badge">Anteprima</div>
         </div>
       </div>
       <form class="form" id="joinForm">
-        <div class="field">
-          <label for="roomId">Room ID</label>
-          <input id="roomId" class="input" type="text" placeholder="es. room789_1" required />
-        </div>
-        <div class="field">
-          <label for="clientType">Client Type</label>
-          <select id="clientType" class="select">
-            <option value="guest">guest</option>
-            <option value="host">host</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="token">Token</label>
-          <input id="token" class="input" type="text" placeholder="es. guest_1" required />
-        </div>
-        <div class="field">
-          <label for="videoSource">Seleziona fotocamera</label>
-          <select id="videoSource" class="select"></select>
+        <div class="field" style="position:relative;">
+          <div class="split">
+            <button type="button" id="btnCamMenu" class="btn-split split-left" aria-haspopup="menu" aria-expanded="false" title="Seleziona fotocamera">
+              <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
+            </button>
+            <button type="button" id="btnPreviewCam" class="btn-split split-right" aria-pressed="true" title="Attiva/Disattiva fotocamera">
+              <span class="material-symbols-rounded" id="icPreviewCam">videocam</span>
+            </button>
+          </div>
+          <div id="camMenu" class="menu" role="menu" hidden></div>
         </div>
         <div class="hstack" style="margin-top:6px;">
-          <button type="submit" class="btn-primary" id="startCallBtn"><span class="material-symbols-rounded" style="vertical-align: middle;">call</span> Avvia</button>
-          <button type="button" class="btn-secondary" id="togglePreviewCam"><span class="material-symbols-rounded" aria-hidden="true">videocam_off</span> Disattiva cam</button>
+          <button type="submit" class="btn-primary" id="startCallBtn">
+            <span class="material-symbols-rounded" style="vertical-align: middle;">call</span> Entra nella videochiamata
+          </button>
         </div>
       </form>
     </div>
@@ -292,7 +329,7 @@
   <!-- Settings Drawer (lightweight) -->
   <dialog id="settingsDlg" style="border:none; border-radius:16px; padding:0; background:var(--surface); color:var(--text); width:min(520px, 92vw);">
     <form method="dialog" style="display:grid; grid-template-rows:auto 1fr auto; max-height: 80svh;">
-      <header style="padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.06); font-weight:700;">Impostazioni</header>
+      <header style="padding:12px 16px; border-bottom:1px solid var(--glass); font-weight:700;">Impostazioni</header>
       <div style="padding:16px; display:grid; gap:12px; overflow:auto;">
         <div class="field">
           <label for="videoSource2">Fotocamera</label>
@@ -306,7 +343,7 @@
           </select>
         </div>
       </div>
-      <footer style="padding:12px 16px; border-top:1px solid rgba(255,255,255,.06); display:flex; justify-content:flex-end; gap:8px;">
+      <footer style="padding:12px 16px; border-top:1px solid var(--glass); display:flex; justify-content:flex-end; gap:8px;">
         <button class="btn-secondary" value="cancel">Chiudi</button>
       </footer>
     </form>
@@ -314,7 +351,7 @@
 
   <div class="snackbar" id="snackbar" role="status" aria-live="polite"></div>
 
-  <!-- Logic -->
+  <!-- Logic (unchanged API, small additions at the bottom for theme & room chip) -->
   <script type="module">
     import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
     import { Device } from "https://esm.sh/mediasoup-client@3";
@@ -323,13 +360,12 @@
     const prejoinBackdrop = document.getElementById('prejoinBackdrop');
     const prejoinPreview = document.getElementById('prejoinPreview');
     const startCallBtn = document.getElementById('startCallBtn');
-    const togglePreviewCamBtn = document.getElementById('togglePreviewCam');
+    const btnCamMenu = document.getElementById('btnCamMenu');
+    const btnPreviewCam = document.getElementById('btnPreviewCam');
+    const icPreviewCam = document.getElementById('icPreviewCam');
+    const camMenu = document.getElementById('camMenu');
 
     const joinForm = document.getElementById('joinForm');
-    const roomIdInput = document.getElementById('roomId');
-    const clientTypeInput = document.getElementById('clientType');
-    const tokenInput = document.getElementById('token');
-    const videoSourceSelect = document.getElementById('videoSource');
     const videoSourceSelect2 = document.getElementById('videoSource2');
 
     const localVideoElem = document.getElementById('localVideo');
@@ -345,10 +381,21 @@
     const btnSwitchCam = document.getElementById('btnSwitchCam');
     const btnHangup = document.getElementById('btnHangup');
     const btnSettings = document.getElementById('btnSettings');
-    const btnUnmute = document.getElementById('btnUnmute');
     const openSettings = document.getElementById('openSettings');
     const settingsDlg = document.getElementById('settingsDlg');
     const qualitySelect = document.getElementById('quality');
+    const chipRoom = document.getElementById('chipRoom');
+
+    const themeToggle = document.getElementById('toggleTheme');
+
+    const getUrlParams = () => {
+      const q = new URLSearchParams(location.search);
+      return {
+        roomId: q.get('roomId')?.trim(),
+        clientType: q.get('clientType')?.trim(), // 'guest' | 'host'
+        token: q.get('token')?.trim(),
+      };
+    };
 
     // Codec preference (can be overridden in Settings in future)
     let forceCodec = null; // 'h264' | 'vp8' | null
@@ -361,75 +408,47 @@
     const ownProducerIds = new Set();
     const consumedProducerIds = new Set();
     let currentVideoDeviceId = '';
-      let desiredWidth = 1280, desiredHeight = 720;
-      const deviceLabelMap = new Map();
-      function isRearFromTrackOrLabel(track, deviceId) {
-        try {
-          const fm = track?.getSettings?.().facingMode;
-          if (fm) return fm === 'environment';
-        } catch {}
-        const label = (deviceLabelMap.get(deviceId) || '').toLowerCase();
-        return /(back|rear|environment|tele|wide|ultra)/.test(label);
-      }
-      function setMirror(elem, isRear) {
-        // mirror only for front camera
-        elem.classList.toggle('mirror', !isRear);
-      }
+    let desiredWidth = 1280, desiredHeight = 720;
+    const deviceLabelMap = new Map();
+    function isRearFromTrackOrLabel(track, deviceId) {
+      try { const fm = track?.getSettings?.().facingMode; if (fm) return fm === 'environment'; } catch {}
+      const label = (deviceLabelMap.get(deviceId) || '').toLowerCase();
+      return /(back|rear|environment|tele|wide|ultra)/.test(label);
+    }
+    function setMirror(elem, isRear) { elem.classList.toggle('mirror', !isRear); }
 
     const remoteStream = new MediaStream();
-
-    
 
     // --- Helpers server RPC (socket.io a server remoto)
     const serverURL = "https://videocall.webcheckin.cloud:4000";
 
     const joinRoom = (roomId, clientType, token) => new Promise((resolve, reject) => {
-      socket.emit('joinRoom', { roomId, clientType, token }, (params) => {
-        if (params?.error) return reject(new Error(params.error));
-        resolve(params);
-      });
+      socket.emit('joinRoom', { roomId, clientType, token }, (params) => { if (params?.error) return reject(new Error(params.error)); resolve(params); });
     });
-
     const getRouterCapabilities = () => new Promise((resolve, reject) => {
-      socket.emit('getRouterCapabilities', null, (params) => {
-        if (params?.error) return reject(new Error(params.error));
-        resolve(params.rtpCapabilities);
-      });
+      socket.emit('getRouterCapabilities', null, (params) => { if (params?.error) return reject(new Error(params.error)); resolve(params.rtpCapabilities); });
     });
-
     const createTransport = (direction) => new Promise((resolve, reject) => {
       socket.emit('transportCreate', { direction }, (params) => {
         if (params?.error) return reject(new Error(params.error));
-        const transport = direction === 'send'
-          ? device.createSendTransport(params)
-          : device.createRecvTransport(params);
+        const transport = direction === 'send' ? device.createSendTransport(params) : device.createRecvTransport(params);
         resolve(transport);
       });
     });
-
     const consume = (producerId) => new Promise((resolve, reject) => {
-      socket.emit('transportConsume', {
-        transportId: recvTransport.id,
-        producerId,
-        rtpCapabilities: device.rtpCapabilities
-      }, (params) => {
-        if (params?.error) return reject(new Error(params.error));
-        resolve(params);
+      socket.emit('transportConsume', { transportId: recvTransport.id, producerId, rtpCapabilities: device.rtpCapabilities }, (params) => {
+        if (params?.error) return reject(new Error(params.error)); resolve(params);
       });
     });
 
     function setupTransportListeners(transport, direction) {
       if (transport._listenersRegistered) return;
       transport.on('connect', ({ dtlsParameters }, callback, errback) => {
-        socket.emit('transportConnect', { transportId: transport.id, dtlsParameters }, (res) => {
-          if (res?.error) errback(res.error); else callback();
-        });
+        socket.emit('transportConnect', { transportId: transport.id, dtlsParameters }, (res) => { if (res?.error) errback(res.error); else callback(); });
       });
       if (direction === 'send') {
         transport.on('produce', ({ kind, rtpParameters }, callback, errback) => {
-          socket.emit('transportProduce', { transportId: transport.id, kind, rtpParameters }, (res) => {
-            if (res?.error) errback(res.error); else callback({ id: res.producerId });
-          });
+          socket.emit('transportProduce', { transportId: transport.id, kind, rtpParameters }, (res) => { if (res?.error) errback(res.error); else callback({ id: res.producerId }); });
         });
       }
       transport._listenersRegistered = true;
@@ -438,32 +457,28 @@
     async function enumerateCameras() {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === 'videoinput');
-      const fillSelect = (sel) => {
-        sel.innerHTML = '';
+      videoDevices.forEach(d => deviceLabelMap.set(d.deviceId, d.label || ''));
+      if (videoSourceSelect2) {
+        videoSourceSelect2.innerHTML = '';
         videoDevices.forEach((d, i) => {
-          deviceLabelMap.set(d.deviceId, d.label || '');
-          const opt = document.createElement('option');
-          opt.value = d.deviceId;
-          opt.textContent = d.label || `Fotocamera ${i + 1}`;
-          sel.appendChild(opt);
+          const opt = document.createElement('option'); opt.value = d.deviceId; opt.textContent = d.label || `Fotocamera ${i + 1}`; videoSourceSelect2.appendChild(opt);
         });
-        if (currentVideoDeviceId) sel.value = currentVideoDeviceId;
-      };
-      fillSelect(videoSourceSelect);
-      fillSelect(videoSourceSelect2);
+        if (currentVideoDeviceId) videoSourceSelect2.value = currentVideoDeviceId;
+      }
+      camMenu.innerHTML = '';
+      if (!videoDevices.length) {
+        const empty = document.createElement('div'); empty.style.padding = '10px 12px'; empty.style.color = 'var(--text-dim)'; empty.textContent = 'Nessuna fotocamera trovata'; camMenu.appendChild(empty); return videoDevices;
+      }
+      videoDevices.forEach((d, i) => {
+        const b = document.createElement('button'); const label = d.label || `Fotocamera ${i + 1}`; b.type = 'button'; b.role = 'menuitem'; b.textContent = label; b.dataset.deviceId = d.deviceId;
+        b.addEventListener('click', async () => { currentVideoDeviceId = d.deviceId; if (videoSourceSelect2) videoSourceSelect2.value = d.deviceId; await updatePreview(currentVideoDeviceId); closeCamMenu(); }); camMenu.appendChild(b);
+      });
       return videoDevices;
     }
 
     async function getUserMediaFor(deviceId, preview = false) {
       const constraints = {
-        video: deviceId ? {
-          deviceId: { exact: deviceId },
-          width: { ideal: desiredWidth },
-          height: { ideal: desiredHeight }
-        } : {
-          width: { ideal: desiredWidth },
-          height: { ideal: desiredHeight }
-        },
+        video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } } : { width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
         audio: preview ? false : { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
       };
       return await navigator.mediaDevices.getUserMedia(constraints);
@@ -481,7 +496,7 @@
     }
 
     async function buildLocalStream() {
-      const selId = videoSourceSelect.value || currentVideoDeviceId;
+      const selId = currentVideoDeviceId;
       const stream = await getUserMediaFor(selId, false);
       currentVideoDeviceId = selId || currentVideoDeviceId;
       const preview = new MediaStream(stream.getVideoTracks());
@@ -495,18 +510,10 @@
       if (!sendTransport || !localStream) return;
       const audioTrack = localStream.getAudioTracks()[0];
       const videoTrack = localStream.getVideoTracks()[0];
-
-      // 1) Prova standard senza forzare codec (più compatibile su desktop)
-      try {
-        if (audioTrack && !audioProducer) audioProducer = await sendTransport.produce({ track: audioTrack });
-      } catch (err) {
-        console.warn('[produce] audio default failed', err?.message || err);
-      }
-      try {
-        if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack });
-      } catch (err) {
+      try { if (audioTrack && !audioProducer) audioProducer = await sendTransport.produce({ track: audioTrack }); } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
+      try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
+      catch (err) {
         console.warn('[produce] video default failed', err?.message || err);
-        // 2) Fallback: prova VP8 poi H264 se disponibili
         try {
           const caps = device?.rtpCapabilities || {};
           const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
@@ -514,193 +521,100 @@
           const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
           const candidates = [vp8, h264].filter(Boolean);
           for (const codec of candidates) {
-            try {
-              videoProducer = await sendTransport.produce({ track: videoTrack, codec });
-              console.log('[produce] video fallback OK with', codec?.mimeType);
-              break;
-            } catch (e2) {
-              console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2);
-            }
+            try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
+            catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
           }
         } catch {}
         if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
       }
-
-      // Traccia gli ID dei nostri producer per evitare self-subscribe
       if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
       if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
       console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
     }
 
     async function subscribeToProducer(producerId) {
-      // Skip if it's our own producer or already consumed
       if (!producerId || ownProducerIds.has(producerId) || consumedProducerIds.has(producerId)) return;
-      if (!producerId) return;
       try {
         const { id, kind, rtpParameters } = await consume(producerId);
         const consumer = await recvTransport.consume({ id, producerId, kind, rtpParameters });
-        // Ensure only one track per kind in the remote stream
         if (kind === 'video') remoteStream.getVideoTracks().forEach(t => remoteStream.removeTrack(t));
         if (kind === 'audio') remoteStream.getAudioTracks().forEach(t => remoteStream.removeTrack(t));
         remoteStream.addTrack(consumer.track);
         consumedProducerIds.add(producerId);
         remoteVideoElem.srcObject = remoteStream;
         ensurePlayback(remoteVideoElem);
-        socket.emit('consumerResume', { consumerId: consumer.id }, (res) => {
-          if (res?.error) console.error('Errore consumerResume:', res.error);
-        });
+        socket.emit('consumerResume', { consumerId: consumer.id }, (res) => { if (res?.error) console.error('Errore consumerResume:', res.error); });
         console.log('[consume] ok', { kind });
-      } catch (err) {
-        console.error('Errore nella subscribeToProducer:', err);
-        toast('Errore nella sottoscrizione media');
-      }
+      } catch (err) { console.error('Errore nella subscribeToProducer:', err); toast('Errore nella sottoscrizione media'); }
     }
 
     async function startCall() {
-      const roomId = roomIdInput.value.trim();
-      const clientType = clientTypeInput.value.trim();
-      const token = tokenInput.value.trim();
-      if (!roomId || !clientType || !token) {
-        toast("Compila roomId, clientType e token.");
-        return;
-      }
-
-      socket = io(serverURL, {
-        query: { roomId, authToken: token, clientType },
-        // path: '/socket.io/',   // vedi punto 2
-        // transports: ['polling', 'websocket'] // opzionale; default va già bene
-      });
-
-      // opzionale: attendi il connect prima delle RPC con ack
+      const { roomId, clientType, token } = getUrlParams();
+      if (!roomId || !clientType || !token) { toast("Compila roomId, clientType e token."); return; }
+      socket = io(serverURL, { query: { roomId, authToken: token, clientType } });
       const waitForConnect = s => new Promise(res => s.connected ? res() : s.once('connect', res));
       await waitForConnect(socket);
-
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
-
-      uiRoomId.textContent = roomId;
-      uiClientType.textContent = clientType;
-      setStatus(true, 'Connessione…');
-
+      uiRoomId.textContent = roomId; chipRoom.textContent = roomId; uiClientType.textContent = clientType; setStatus(true, 'Connessione…');
       const { canJoinRoom, existingProducers } = await joinRoom(roomId, clientType, token);
-      if (!canJoinRoom) {
-        setStatus(false, 'Accesso negato');
-        toast('Accesso alla room negato');
-        socket?.disconnect();
-        return;
-      }
-
+      if (!canJoinRoom) { setStatus(false, 'Accesso negato'); toast('Accesso alla room negato'); socket?.disconnect(); return; }
       const routerRtpCapabilities = await getRouterCapabilities();
-      device = new Device();
-      await device.load({ routerRtpCapabilities });
-
-      if (!device.canProduce('audio') && !device.canProduce('video')) {
-        toast('Questo device non può produrre audio o video.');
-        return;
-      }
-
-      // Media locale
+      device = new Device(); await device.load({ routerRtpCapabilities });
+      if (!device.canProduce('audio') && !device.canProduce('video')) { toast('Questo device non può produrre audio o video.'); return; }
       localStream = await buildLocalStream();
-
-      // Trasporti
-      sendTransport = await createTransport('send');
-      setupTransportListeners(sendTransport, 'send');
-      sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
-
-      recvTransport = await createTransport('recv');
-      setupTransportListeners(recvTransport, 'recv');
-      recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
-
-      // Produce
+      sendTransport = await createTransport('send'); setupTransportListeners(sendTransport, 'send'); sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
+      recvTransport = await createTransport('recv'); setupTransportListeners(recvTransport, 'recv'); recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
       await produceTracks();
-
-      // Producer già presenti
-      for (const p of (existingProducers || [])) {
-        const prodId = p.producerId ?? p;
-        await subscribeToProducer(prodId, p?.appData?.socketId);
-      }
-
-      // Nuovi producer
-      socket.on('newProducer', ({ producerId }) => {
-        // piccolo retry in caso di race condition nel setup del recvTransport
-        const doSub = () => subscribeToProducer(producerId).catch(()=>{});
-        setTimeout(doSub, 0);
-        setTimeout(doSub, 300);
-      });
-
+      for (const p of (existingProducers || [])) { const prodId = p.producerId ?? p; await subscribeToProducer(prodId, p?.appData?.socketId); }
+      socket.on('newProducer', ({ producerId }) => { const doSub = () => subscribeToProducer(producerId).catch(() => { }); setTimeout(doSub, 0); setTimeout(doSub, 300); });
       socket.on('hangup', hangupCall);
       socket.on('connect', () => setStatus(true, 'Connesso'));
       socket.io.engine.on && socket.io.engine.on('upgrade', () => console.log('[socket] upgraded to WebSocket'));
       socket.on('disconnect', () => setStatus(false, 'Disconnesso'));
-
-      // UI
       prejoinBackdrop.style.display = 'none';
-      // Prova a forzare la riproduzione del remoto subito dopo un gesto utente
       ensurePlayback(remoteVideoElem);
       toast('Videochiamata avviata');
     }
 
-    function setStatus(connected, label) {
-      statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)';
-      uiStatus.textContent = label || (connected ? 'Connesso' : 'Disconnesso');
-    }
-
-    function toast(msg, ms = 1800) {
-      snackbar.textContent = msg;
-      snackbar.classList.add('show');
-      setTimeout(() => snackbar.classList.remove('show'), ms);
-    }
+    function setStatus(connected, label) { statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)'; uiStatus.textContent = label || (connected ? 'Connesso' : 'Disconnesso'); }
+    function toast(msg, ms = 1800) { snackbar.textContent = msg; snackbar.classList.add('show'); setTimeout(() => snackbar.classList.remove('show'), ms); }
 
     async function toggleMic() {
-      const track = localStream?.getAudioTracks?.()[0];
-      if (!track) return;
-      track.enabled = !track.enabled;
-      btnMic.setAttribute('aria-pressed', String(track.enabled));
+      const track = localStream?.getAudioTracks?.()[0]; if (!track) return;
+      track.enabled = !track.enabled; btnMic.setAttribute('aria-pressed', String(track.enabled));
       document.getElementById('micBadgeLocal').hidden = track.enabled;
       document.getElementById('icMic').textContent = track.enabled ? 'mic' : 'mic_off';
       toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
-      try {
-        if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause();
-      } catch {}
+      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch {}
     }
-
     async function toggleCam() {
-      const track = localStream?.getVideoTracks?.()[0];
-      if (!track) return;
-      track.enabled = !track.enabled;
-      btnCam.setAttribute('aria-pressed', String(track.enabled));
+      const track = localStream?.getVideoTracks?.()[0]; if (!track) return;
+      track.enabled = !track.enabled; btnCam.setAttribute('aria-pressed', String(track.enabled));
       document.getElementById('icCam').textContent = track.enabled ? 'videocam' : 'videocam_off';
       toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
-      try {
-        if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause();
-      } catch {}
+      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch {}
     }
 
+    function openCamMenu() { camMenu.hidden = false; btnCamMenu.setAttribute('aria-expanded', 'true'); }
+    function closeCamMenu() { camMenu.hidden = true; btnCamMenu.setAttribute('aria-expanded', 'false'); }
+    function toggleCamMenu() { camMenu.hidden ? openCamMenu() : closeCamMenu(); }
+
+    function togglePreviewCameraTrack() { const t = prejoinPreview.srcObject?.getVideoTracks?.()[0]; if (!t) return; t.enabled = !t.enabled; btnPreviewCam.setAttribute('aria-pressed', String(t.enabled)); icPreviewCam.textContent = t.enabled ? 'videocam' : 'videocam_off'; }
+
     async function switchCamera(nextId) {
-      const videos = await enumerateCameras();
-      if (!videos.length) return;
-
-      let idx = videos.findIndex(v => v.deviceId === (nextId || currentVideoDeviceId));
-      idx = (idx + 1) % videos.length;
-      const newId = videos[idx].deviceId;
-
-      // Update preview (pre-join) and live (in-call)
+      const videos = await enumerateCameras(); if (!videos.length) return;
+      let idx = videos.findIndex(v => v.deviceId === (nextId || currentVideoDeviceId)); idx = (idx + 1) % videos.length; const newId = videos[idx].deviceId;
       await updatePreview(newId);
-
       if (sendTransport) {
-        const newStream = await getUserMediaFor(newId, false);
-        const newTrack = newStream.getVideoTracks()[0];
+        const newStream = await getUserMediaFor(newId, false); const newTrack = newStream.getVideoTracks()[0];
         if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
-        // stop old local video track
         localStream.getVideoTracks().forEach(t => t.stop());
         localStream.removeTrack(localStream.getVideoTracks()[0]);
         localStream.addTrack(newTrack);
-        // update local preview element
         localVideoElem.srcObject = new MediaStream([newTrack]);
         setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, newId));
       }
-
       currentVideoDeviceId = newId;
-      videoSourceSelect.value = newId;
       videoSourceSelect2.value = newId;
       toast('Fotocamera cambiata');
     }
@@ -713,59 +627,34 @@
         if (recvTransport) { recvTransport.close(); recvTransport = null; }
         if (localStream) { localStream.getTracks().forEach(t => t.stop()); localStream = null; }
         if (socket) { socket.disconnect(); socket = null; }
-        ownProducerIds.clear();
-        consumedProducerIds.clear();
-        localVideoElem.srcObject = null;
-        remoteVideoElem.srcObject = null;
-        setStatus(false, 'Terminata');
-        prejoinBackdrop.style.display = 'grid';
-        updatePreview(currentVideoDeviceId);
-        toast('Chiamata terminata');
-      } catch (e) {
-        console.error('Errore in hangup:', e);
-      }
+        ownProducerIds.clear(); consumedProducerIds.clear();
+        localVideoElem.srcObject = null; remoteVideoElem.srcObject = null;
+        setStatus(false, 'Terminata'); prejoinBackdrop.style.display = 'grid'; updatePreview(currentVideoDeviceId); toast('Chiamata terminata');
+      } catch (e) { console.error('Errore in hangup:', e); }
     }
 
     // --- Event wiring
-    joinForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      startCall().catch(err => { console.error(err); toast(err.message || 'Errore avvio'); });
-    });
-
-    togglePreviewCamBtn.addEventListener('click', () => {
-      const t = prejoinPreview.srcObject?.getVideoTracks?.()[0];
-      if (!t) return;
-      t.enabled = !t.enabled;
-      togglePreviewCamBtn.innerHTML = `<span class="material-symbols-rounded">${t.enabled ? 'videocam_off' : 'videocam'}</span> ${t.enabled ? 'Disattiva cam' : 'Attiva cam'}`;
-    });
+    joinForm.addEventListener('submit', (e) => { e.preventDefault(); startCall().catch(err => { console.error(err); toast(err.message || 'Errore avvio'); }); });
 
     btnMic.addEventListener('click', () => toggleMic());
     btnCam.addEventListener('click', () => toggleCam());
     btnSwitchCam.addEventListener('click', () => switchCamera());
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
-    
+    btnCamMenu.addEventListener('click', (e) => { e.stopPropagation(); toggleCamMenu(); });
+    btnPreviewCam.addEventListener('click', () => { togglePreviewCameraTrack(); });
+    document.addEventListener('click', (e) => { if (!camMenu.hidden && !camMenu.contains(e.target) && e.target !== btnCamMenu) { closeCamMenu(); } });
 
     const openSettingsHandler = () => settingsDlg.showModal();
     btnSettings.addEventListener('click', openSettingsHandler);
     openSettings.addEventListener('click', openSettingsHandler);
 
-    videoSourceSelect.addEventListener('change', async () => {
-      currentVideoDeviceId = videoSourceSelect.value;
-      await updatePreview(currentVideoDeviceId);
-    });
-
-    videoSourceSelect2.addEventListener('change', async () => {
-      currentVideoDeviceId = videoSourceSelect2.value;
-      if (sendTransport) await switchCamera(currentVideoDeviceId); else await updatePreview(currentVideoDeviceId);
-    });
+    videoSourceSelect2.addEventListener('change', async () => { currentVideoDeviceId = videoSourceSelect2.value; if (sendTransport) await switchCamera(currentVideoDeviceId); else await updatePreview(currentVideoDeviceId); });
 
     qualitySelect.addEventListener('change', async () => {
-      const [w, h] = qualitySelect.value.split('x').map(n => parseInt(n, 10));
-      desiredWidth = w; desiredHeight = h;
+      const [w, h] = qualitySelect.value.split('x').map(n => parseInt(n, 10)); desiredWidth = w; desiredHeight = h;
       await updatePreview(currentVideoDeviceId);
       if (sendTransport) {
-        const newStream = await getUserMediaFor(currentVideoDeviceId, false);
-        const newTrack = newStream.getVideoTracks()[0];
+        const newStream = await getUserMediaFor(currentVideoDeviceId, false); const newTrack = newStream.getVideoTracks()[0];
         if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
         localStream.getVideoTracks().forEach(t => t.stop());
         localStream = new MediaStream([newTrack, ...(localStream.getAudioTracks() || [])]);
@@ -775,44 +664,51 @@
       }
     });
 
+    // THEME TOGGLE
+    const applyThemeIcon = () => {
+      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+      themeToggle.querySelector('.material-symbols-rounded').textContent = isLight ? 'dark_mode' : 'light_mode';
+    };
+    themeToggle.addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('vc-theme', next); } catch {}
+      applyThemeIcon();
+    });
+
     // --- UX boot
     window.addEventListener('load', async () => {
-      // URL params
-      const q = new URLSearchParams(location.search);
-      if (q.get('roomId')) roomIdInput.value = q.get('roomId');
-      if (q.get('clientType')) clientTypeInput.value = q.get('clientType');
-      if (q.get('token')) tokenInput.value = q.get('token');
-      remoteLabel.textContent = clientTypeInput.value === 'host' ? 'Guest' : 'Host';
+      try { const saved = localStorage.getItem('vc-theme'); if (saved) document.documentElement.setAttribute('data-theme', saved); } catch {}
+      applyThemeIcon();
 
-      try {
-        // Get preliminary permission for accurate device labels
-        const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        tmp.getTracks().forEach(t => t.stop());
-      } catch (err) {
-        console.warn('Permessi media non concessi in anticipo (verranno richiesti al click).', err);
-      }
+      const { roomId, clientType, token } = getUrlParams();
+      const hasParams = !!(roomId && clientType && token);
+      startCallBtn.disabled = !hasParams;
+      startCallBtn.title = hasParams ? 'Avvia' : 'Aggiungi roomId, clientType e token alla URL';
+      remoteLabel.textContent = clientType === 'host' ? 'Guest' : 'Host';
+      chipRoom.textContent = roomId || '—';
+
+      try { const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); tmp.getTracks().forEach(t => t.stop()); } catch (err) { console.warn('Permessi media non concessi in anticipo (verranno richiesti al click).', err); }
       await enumerateCameras();
-      currentVideoDeviceId = videoSourceSelect.value;
+      const vids = await enumerateCameras();
+      if (!currentVideoDeviceId && vids.length) { currentVideoDeviceId = vids[0].deviceId; if (videoSourceSelect2) videoSourceSelect2.value = currentVideoDeviceId; }
       await updatePreview(currentVideoDeviceId);
+      btnPreviewCam.setAttribute('aria-pressed', 'true'); icPreviewCam.textContent = 'videocam';
     });
-  function ensurePlayback(videoEl) {
+
+    function ensurePlayback(videoEl) {
       if (!videoEl) return;
       const tryPlay = () => {
         const p = videoEl.play?.();
         if (p && typeof p.then === 'function') {
-          p.then(() => { btnUnmute.hidden = true; }).catch(() => { btnUnmute.hidden = false; });
+          p.catch(() => {});
         }
       };
       tryPlay();
       videoEl.addEventListener('loadedmetadata', tryPlay, { once: true });
     }
 
-    btnUnmute.addEventListener('click', () => {
-      // User gesture to unlock autoplay
-      ensurePlayback(remoteVideoElem);
-      toast('Riproduzione sbloccata');
-    });
   </script>
 </body>
-
 </html>
