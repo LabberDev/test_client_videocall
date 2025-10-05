@@ -3,10 +3,14 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Videocall • Meet‑style UI (Enhanced)</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <style>
     /* THEME TOKENS */
     :root {
@@ -61,13 +65,22 @@
       --shadow: 0 8px 28px rgba(15, 23, 32, .12);
     }
 
-    *, *::before, *::after { box-sizing: border-box; }
-    html, body { height: 100%; }
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+    }
+
     body {
       margin: 0;
-      background: radial-gradient(1200px 800px at 80% -10%, rgba(92,157,255,.12), transparent 40%),
-                  radial-gradient(1000px 700px at 10% 110%, rgba(61,220,151,.10), transparent 40%),
-                  var(--bg);
+      background: radial-gradient(1200px 800px at 80% -10%, rgba(92, 157, 255, .12), transparent 40%),
+        radial-gradient(1000px 700px at 10% 110%, rgba(61, 220, 151, .10), transparent 40%),
+        var(--bg);
       color: var(--text);
       font-family: Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
       line-height: 1.5;
@@ -76,152 +89,582 @@
       -moz-osx-font-smoothing: grayscale;
     }
 
-    button, input, select { font: inherit; color: inherit; }
+    button,
+    input,
+    select {
+      font: inherit;
+      color: inherit;
+    }
 
-    .app { display: grid; grid-template-rows: auto 1fr auto; min-height: 100svh; }
+    .app {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      min-height: 100svh;
+    }
 
     /* Top App Bar */
     .topbar {
-      display: flex; align-items: center; gap: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       padding: 12px clamp(12px, 3vw, 24px);
       background: linear-gradient(180deg, color-mix(in oklab, var(--surface), transparent 25%), transparent);
       border-bottom: 1px solid var(--glass);
-      position: sticky; top: 0; z-index: 30; backdrop-filter: blur(10px);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(10px);
     }
-    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; letter-spacing: .2px; }
-    .brand .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 0 6px color-mix(in oklab, var(--ok), transparent 80%); }
-    .brand .name { opacity: .95 }
-    .spacer { flex: 1; }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+
+    .brand .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 0 6px color-mix(in oklab, var(--ok), transparent 80%);
+    }
+
+    .brand .name {
+      opacity: .95
+    }
+
+    .spacer {
+      flex: 1;
+    }
 
     .chip {
-      display: inline-flex; gap: 8px; align-items: center;
-      padding: 8px 12px; border-radius: 999px; background: var(--surface-2);
-      border: 1px solid var(--glass); box-shadow: var(--shadow-sm);
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      border: 1px solid var(--glass);
+      box-shadow: var(--shadow-sm);
     }
 
-    .top-actions { display: flex; gap: 8px; align-items: center; }
-
-    .icon-btn {
-      --size: 40px; width: var(--size); height: var(--size);
-      display: grid; place-items: center; border-radius: 10px; cursor: pointer;
-      border: 1px solid var(--glass); background: var(--surface-2);
-      transition: transform .08s ease, box-shadow .2s ease, background .2s ease;
+    .top-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
     }
-    .icon-btn:hover { box-shadow: var(--ring); }
-    .icon-btn:active { transform: scale(.96); }
-    .icon-btn[aria-pressed="true"] { box-shadow: var(--ring); }
+
 
     /* Main */
-    .main { display: grid; grid-template-columns: 1fr minmax(300px, 340px); gap: var(--gap); padding: var(--gap); }
-    .panel { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); min-height: 0; border: 1px solid var(--glass); }
+    .main {
+      display: grid;
+      grid-template-columns: 1fr minmax(300px, 340px);
+      gap: var(--gap);
+      padding: var(--gap);
+    }
+
+    .panel {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 0;
+      max-width: 90vw;
+      border: 1px solid var(--glass);
+    }
 
     /* Stage: responsive video grid */
-    .stage { position: relative; padding: var(--gap); display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--gap); }
+    .stage {
+      position: relative;
+      padding: var(--gap);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: var(--gap);
+    }
 
-    .tile { position: relative; border-radius: clamp(10px, calc(var(--radius) - 6px), 18px); overflow: hidden; background: #000; isolation: isolate; min-height: 220px; aspect-ratio: var(--tile-aspect); outline: none; }
-    .tile::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(0,0,0,.35) 75%); pointer-events: none; }
-    .tile:focus-visible { box-shadow: var(--ring); }
+    .tile {
+      position: relative;
+      border-radius: clamp(10px, calc(var(--radius) - 6px), 18px);
+      overflow: hidden;
+      background: #000;
+      isolation: isolate;
+      min-height: 220px;
+      max-width: 85vw;
+      aspect-ratio: var(--tile-aspect);
+      outline: none;
+    }
 
-    video { width: 100%; height: 100%; display: block; object-fit: cover; background: #000; }
-    .mirror { transform: scaleX(-1); }
+    .tile::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, .35) 75%);
+      pointer-events: none;
+    }
+
+    .tile:focus-visible {
+      box-shadow: var(--ring);
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .mirror {
+      transform: scaleX(-1);
+    }
 
     /* Live badges */
-    .badge { position: absolute; left: 12px; bottom: 12px; padding: 6px 10px; border-radius: 999px; background: rgba(0,0,0,.45); color: #fff; font-size: .9rem; backdrop-filter: blur(6px); border: 1px solid rgba(255,255,255,.12); box-shadow: var(--shadow-sm); }
-    .muted-indicator { position: absolute; right: 12px; bottom: 12px; background: rgba(0,0,0,.48); border-radius: 50%; width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid rgba(255,255,255,.1); box-shadow: var(--shadow-sm); }
+    .badge {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .45);
+      color: #fff;
+      font-size: .9rem;
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, .12);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .muted-indicator {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      background: rgba(0, 0, 0, .48);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, .1);
+      box-shadow: var(--shadow-sm);
+    }
 
     /* Active speaker hook (toggle by adding data-speaking="true" to .tile) */
-    .tile[data-speaking="true"] { box-shadow: 0 0 0 2px color-mix(in oklab, var(--ok), white 15%), 0 0 0 8px color-mix(in oklab, var(--ok), transparent 85%), var(--shadow); }
+    .tile[data-speaking="true"] {
+      box-shadow: 0 0 0 2px color-mix(in oklab, var(--ok), white 15%), 0 0 0 8px color-mix(in oklab, var(--ok), transparent 85%), var(--shadow);
+    }
 
     /* Side panel */
-    .side { display: grid; grid-template-rows: auto 1fr; }
-    .side header { padding: 12px 14px; border-bottom: 1px solid var(--glass); font-weight: 700; }
-    .side .content { padding: 12px; overflow: auto; color: var(--text-dim); }
-    .kv { display: grid; gap: 6px; }
-    .kv label { color: var(--text-dim); font-size: .9rem; }
+    .side {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .side header {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--glass);
+      font-weight: 700;
+    }
+
+    .side .content {
+      padding: 12px;
+      overflow: auto;
+      color: var(--text-dim);
+    }
+
+    .kv {
+      display: grid;
+      gap: 6px;
+    }
+
+    .kv label {
+      color: var(--text-dim);
+      font-size: .9rem;
+    }
 
     /* Bottom Controls */
-    .controls { position: sticky; bottom: 0; padding: max(8px, env(safe-area-inset-bottom)); display: flex; justify-content: center; gap: 10px; background: linear-gradient(0deg, color-mix(in oklab, var(--surface), transparent 15%), transparent); z-index: 20; }
+    .controls {
+      position: sticky;
+      bottom: 0;
+      padding: max(8px, env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      background: linear-gradient(0deg, color-mix(in oklab, var(--surface), transparent 15%), transparent);
+      z-index: 20;
+    }
 
-    .pill { display: flex; gap: 8px; padding: 10px; background: color-mix(in oklab, var(--surface), #000 4%); border-radius: 999px; box-shadow: var(--shadow); border: 1px solid var(--glass); backdrop-filter: blur(8px); }
+    .pill {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: color-mix(in oklab, var(--surface), #000 4%);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--glass);
+      backdrop-filter: blur(8px);
+    }
 
-    .ctrl-btn { --size: 52px; width: var(--size); height: var(--size); border-radius: 999px; border: 1px solid var(--glass); background: var(--surface-2); display: grid; place-items: center; cursor: pointer; transition: transform .06s ease, box-shadow .2s ease, background .2s ease; }
-    .ctrl-btn:hover { box-shadow: var(--ring); }
-    .ctrl-btn:active { transform: scale(.97); }
-    .ctrl-btn[aria-pressed="true"] { box-shadow: var(--ring); }
-    .ctrl-btn.danger { background: var(--danger); border-color: rgba(0,0,0,.15); color: #fff; }
-    .ctrl-btn .material-symbols-rounded { font-variation-settings: 'FILL' 1; }
+    .ctrl-btn {
+      --size: 52px;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 999px;
+      border: 1px solid var(--glass);
+      background: var(--surface-2);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      transition: transform .06s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .ctrl-btn:hover {
+      box-shadow: var(--ring);
+    }
+
+    .ctrl-btn:active {
+      transform: scale(.97);
+    }
+
+    .ctrl-btn[aria-pressed="true"] {
+      box-shadow: var(--ring);
+    }
+
+    .ctrl-btn.danger {
+      background: var(--danger);
+      border-color: rgba(0, 0, 0, .15);
+      color: #fff;
+    }
+
+    .ctrl-btn .material-symbols-rounded {
+      font-variation-settings: 'FILL' 1;
+    }
 
     /* Prejoin Sheet */
-    .prejoin-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .6); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 50; }
-    .prejoin { width: min(980px, 94vw); max-height: 90vh; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; display: grid; grid-template-columns: 1fr 360px; border: 1px solid var(--glass); }
-    .preview { max-height: 48vh; background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); }
-    .prejoin .preview { min-height: 280px; }
-    .prejoin .form { padding: 16px; border-left: 1px solid var(--glass); display: grid; gap: 12px; }
+    .prejoin-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .6);
+      backdrop-filter: blur(6px);
+      display: grid;
+      place-items: center;
+      z-index: 50;
+    }
 
-    .field { display: grid; gap: 6px; }
-    .field label { color: var(--text-dim); font-size: .9rem; }
-    .input, .select { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--glass); background: var(--surface-2); color: var(--text); }
+    .prejoin {
+      width: min(980px, 94vw);
+      max-height: 90vh;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      border: 1px solid var(--glass);
+    }
 
-    .btn-primary { padding: 12px 14px; background: var(--primary); border: none; color: white; border-radius: 12px; cursor: pointer; font-weight: 800; letter-spacing: .2px; box-shadow: 0 8px 24px color-mix(in oklab, var(--primary), transparent 75%); transition: transform .06s ease, box-shadow .2s ease; }
-    .btn-primary:hover { box-shadow: 0 10px 30px color-mix(in oklab, var(--primary), transparent 68%); }
-    .btn-primary:active { transform: translateY(1px); }
+    .preview {
+      max-height: 48vh;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
+    }
 
-    .btn-secondary { padding: 10px 12px; background: var(--surface-2); border: 1px solid var(--glass); color: var(--text); border-radius: 10px; cursor: pointer; }
+    .prejoin .preview {
+      min-height: 280px;
+    }
 
-    .hstack { display: flex; gap: 8px; align-items: center; text-align: center; }
+    .prejoin .form {
+      padding: 16px;
+      border-left: 1px solid var(--glass);
+      display: grid;
+      gap: 12px;
+    }
 
-    .preview .tile { height: 100%; border-radius: 0; aspect-ratio: var(--tile-aspect); }
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field label {
+      color: var(--text-dim);
+      font-size: .9rem;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--glass);
+      background: var(--surface-2);
+      color: var(--text);
+    }
+
+    .btn-primary {
+      padding: 12px 20px;
+      margin-right: auto;
+      margin-left: auto;
+      background: var(--primary);
+      border: none;
+      color: white;
+      border-radius: 30px;
+      cursor: pointer;
+      font-weight: 800;
+      letter-spacing: .2px;
+      box-shadow: 0 8px 24px color-mix(in oklab, var(--primary), transparent 75%);
+      transition: transform .06s ease, box-shadow .2s ease;
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 10px 30px color-mix(in oklab, var(--primary), transparent 68%);
+    }
+
+    .btn-primary:active {
+      transform: translateY(1px);
+    }
+
+    .btn-secondary {
+      padding: 10px 12px;
+      background: var(--surface-2);
+      border: 1px solid var(--glass);
+      color: var(--text);
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .hstack {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      text-align: center;
+    }
+
+    .preview .tile {
+      height: 100%;
+      border-radius: 0;
+      aspect-ratio: var(--tile-aspect);
+    }
 
     /* Snackbar */
-    .snackbar { position: fixed; left: 50%; bottom: calc(16px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--surface-3); color: var(--text); padding: 10px 14px; border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--glass); opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; z-index: 60; }
-    .snackbar.show { opacity: 1; }
+    .snackbar {
+      position: fixed;
+      left: 50%;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      background: var(--surface-3);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--glass);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+      z-index: 60;
+    }
+
+    .snackbar.show {
+      opacity: 1;
+    }
 
     /* Split button fotocamera (prejoin) */
-    .split { width: 220px; display: inline-flex; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--glass); background: var(--surface-2); }
-    .btn-split { padding: 10px 12px; background: transparent; border: 0; color: var(--text); cursor: pointer; transition: filter .2s ease; }
-    .btn-split:hover { filter: brightness(1.05); }
-    .btn-split:focus-visible { outline: none; box-shadow: var(--ring); border-radius: 10px; }
-    .split-left { border-right: 1px solid var(--glass); background: linear-gradient(180deg, color-mix(in oklab, var(--surface-3), white 3%), color-mix(in oklab, var(--surface-3), black 4%)); }
-    .split-right[aria-pressed="false"] { opacity: .7; }
+    .split {
+      width: auto;
+      margin-right: auto;
+      margin-left: auto;
+      align-items: center;
+      display: inline-flex;
+      border-radius: 25px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--glass);
+      background: var(--surface-2);
+    }
 
-    .menu { position: absolute; top: 100%; margin-top: 8px; left: 0; min-width: 260px; background: var(--surface); border: 1px solid var(--glass); border-radius: 12px; box-shadow: var(--shadow); z-index: 70; padding: 6px; }
-    .menu button { width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: 0; color: var(--text); border-radius: 8px; cursor: pointer; }
-    .menu button:hover, .menu button:focus { outline: none; background: var(--surface-2); }
+    .btn-split {
+      padding: 10px 12px;
+      align-items: center;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      cursor: pointer;
+      transition: filter .2s ease;
+    }
+
+    .btn-split:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-split:focus-visible {
+      outline: none;
+      box-shadow: var(--ring);
+      border-radius: 10px;
+    }
+
+    .split-right[aria-pressed="true"] {
+    }
+
+    .split-right[aria-pressed="false"] {
+      opacity: .7;
+      background-color: #e97b7b;
+    }
+
+    .split-left {
+      border-right: 1px solid var(--glass);
+      background: linear-gradient(180deg, color-mix(in oklab, var(--surface-3), white 3%), color-mix(in oklab, var(--surface-3), black 4%));
+    }
+
+    .menu {
+      position: absolute;
+      top: 100%;
+      margin-top: 8px;
+      left: 0;
+      min-width: 260px;
+      background: var(--surface);
+      border: 1px solid var(--glass);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      z-index: 70;
+      padding: 6px;
+    }
+
+    .menu button {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .menu button:hover,
+    .menu button:focus {
+      outline: none;
+      background: var(--surface-2);
+    }
 
     /* Mobile */
     @media (max-width: 1024px) {
-      .main { grid-template-columns: 1fr; }
-      .side { display: none; }
-      .stage { grid-template-columns: 1fr; }
-      .prejoin { grid-template-columns: 1fr; }
-      .prejoin .form { border-left: 0; border-top: 1px solid var(--glass); }
-      .ctrl-btn { --size: 48px; }
+      .main {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        display: none;
+      }
+
+      .stage {
+        grid-template-columns: 1fr;
+      }
+
+      .prejoin {
+        grid-template-columns: 1fr;
+      }
+
+      .prejoin .form {
+        border-left: 0;
+        border-top: 1px solid var(--glass);
+      }
+
+      .ctrl-btn {
+        --size: 48px;
+      }
     }
 
     /* Mobile prejoin: verticale, sfondo bianco dietro */
     @media (max-width: 640px) {
-      .prejoin-backdrop { background: #fff !important; backdrop-filter: none !important; }
-      .prejoin { background: var(--surface); }
-      .preview { height: 32svh !important; display: grid; place-items: center; padding: 0 12px; contain: layout; }
-      .preview .tile { width: clamp(240px, 88vw, 360px); aspect-ratio: 9 / 16; border-radius: 14px; margin: 0 auto; overflow: hidden; box-shadow: var(--shadow); }
-      #prejoinPreview { width: 100%; height: 100%; object-fit: cover; object-position: center; }
-      .menu { min-width: 88vw; left: 50%; transform: translateX(-50%); }
+      .prejoin-backdrop {
+        background: #fff !important;
+        backdrop-filter: none !important;
+      }
+
+      .prejoin {
+        background: var(--surface);
+      }
+
+      .preview {
+        height: 32svh !important;
+        display: grid;
+        place-items: center;
+        padding: 0 12px;
+        contain: layout;
+      }
+
+      .preview .tile {
+        width: clamp(240px, 88vw, 360px);
+        aspect-ratio: 9 / 16;
+        border-radius: 14px;
+        margin: 0 auto;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+
+      #prejoinPreview {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
+      }
+
+      .menu {
+        min-width: 88vw;
+        left: 50%;
+        transform: translateX(-50%);
+      }
     }
-      .prejoin { background: var(--surface); }
-      .preview { max-height: 30vh !important; display: grid; place-items: center; padding: 0 12px; }
-      .preview .tile { aspect-ratio: 11 / 16; border-radius: 12px; margin: 0 auto; overflow: hidden; }
-      #prejoinPreview { width: 100%; height: 100%; object-fit: cover; }
-      .menu { min-width: 88vw; left: 50%; transform: translateX(-50%); }
+
+    .prejoin {
+      background: var(--surface);
+    }
+
+    .preview {
+      max-height: 30vh !important;
+      display: grid;
+      place-items: center;
+      padding: 0 12px;
+    }
+
+    .preview .tile {
+      aspect-ratio: 11 / 16;
+      border-radius: 12px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    #prejoinPreview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .menu {
+      min-width: 88vw;
+      left: 50%;
+      transform: translateX(-50%);
+    }
     }
 
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
-      * { transition: none !important; animation: none !important; }
+      * {
+        transition: none !important;
+        animation: none !important;
+      }
     }
-      /* Cam menu chevron animation */
-    #btnCamMenu { position: relative; }
-    #btnCamMenu .material-symbols-rounded { transition: transform .2s ease; }
-    #btnCamMenu[aria-expanded="true"] .material-symbols-rounded { transform: rotate(180deg); }
+
+    /* Cam menu chevron animation */
+    #btnCamMenu {
+      position: relative;
+    }
+
+    #btnCamMenu .material-symbols-rounded {
+      transition: transform .2s ease;
+    }
+
+    #btnCamMenu[aria-expanded="true"] .material-symbols-rounded {
+      transform: rotate(180deg);
+    }
   </style>
 </head>
 
@@ -235,11 +678,10 @@
       </div>
       <div class="spacer"></div>
       <div class="top-actions">
-        <span class="chip" title="ID stanza"><span class="material-symbols-rounded" aria-hidden="true">meeting_room</span><span id="chipRoom">—</span></span>
-        <button class="icon-btn" id="toggleTheme" aria-label="Cambia tema" title="Cambia tema">
-          <span class="material-symbols-rounded">light_mode</span>
-        </button>
-        <button class="btn-secondary" id="openSettings"><span class="material-symbols-rounded" aria-hidden="true">tune</span> Impostazioni</button>
+        <span class="chip" title="ID stanza"><span
+            class="material-symbols-rounded"
+            aria-hidden="true">meeting_room</span><span
+            id="chipRoom">—</span></span>
       </div>
     </header>
 
@@ -249,7 +691,8 @@
         <div class="tile" id="localTile" tabindex="0">
           <video id="localVideo" autoplay muted playsinline></video>
           <div class="badge">Tu</div>
-          <div class="muted-indicator" id="micBadgeLocal" title="Microfono disattivato" hidden>
+          <div class="muted-indicator" id="micBadgeLocal"
+            title="Microfono disattivato" hidden>
             <span class="material-symbols-rounded">mic_off</span>
           </div>
         </div>
@@ -265,11 +708,20 @@
       <aside class="panel side" aria-label="Pannello laterale" id="sidePanel">
         <header>Dettagli riunione</header>
         <div class="content">
-          <div class="kv"><label>Room ID</label><div id="uiRoomId" style="font-weight:600;"></div></div>
-          <div class="kv"><label>Client</label><div id="uiClientType"></div></div>
-          <div class="kv"><label>Stato</label><div id="uiStatus">Non connesso</div></div>
+          <div class="kv"><label>Room ID</label>
+            <div id="uiRoomId" style="font-weight:600;"></div>
+          </div>
+          <div class="kv"><label>Client</label>
+            <div id="uiClientType"></div>
+          </div>
+          <div class="kv"><label>Stato</label>
+            <div id="uiStatus">Non connesso</div>
+          </div>
           <hr style="border-color: var(--glass); margin: 12px 0;">
-          <div style="font-size:.9rem; color: var(--text-dim)">Suggerimento: puoi passare i parametri via URL, es. <code>?roomId=room789_1&amp;clientType=guest&amp;token=guest_1</code></div>
+          <div style="font-size:.9rem; color: var(--text-dim)">Suggerimento:
+            puoi passare i parametri via URL, es.
+            <code>?roomId=room789_1&amp;clientType=guest&amp;token=guest_1</code>
+          </div>
         </div>
       </aside>
     </main>
@@ -277,28 +729,36 @@
     <!-- Bottom Controls -->
     <div class="controls" role="toolbar" aria-label="Controlli chiamata">
       <div class="pill">
-        <button class="ctrl-btn" id="btnMic" aria-label="Attiva/Disattiva microfono" aria-pressed="true" title="Microfono">
+        <button class="ctrl-btn" id="btnMic"
+          aria-label="Attiva/Disattiva microfono" aria-pressed="true"
+          title="Microfono">
           <span class="material-symbols-rounded" id="icMic">mic</span>
         </button>
-        <button class="ctrl-btn" id="btnCam" aria-label="Attiva/Disattiva fotocamera" aria-pressed="true" title="Fotocamera">
+        <button class="ctrl-btn" id="btnCam"
+          aria-label="Attiva/Disattiva fotocamera" aria-pressed="true"
+          title="Fotocamera">
           <span class="material-symbols-rounded" id="icCam">videocam</span>
         </button>
-        <button class="ctrl-btn" id="btnSwitchCam" aria-label="Cambia fotocamera" title="Cambia fotocamera">
+        <button class="ctrl-btn" id="btnSwitchCam"
+          aria-label="Cambia fotocamera" title="Cambia fotocamera">
           <span class="material-symbols-rounded">cameraswitch</span>
         </button>
-        <button class="ctrl-btn danger" id="btnHangup" aria-label="Termina chiamata" title="Termina">
+        <button class="ctrl-btn danger" id="btnHangup"
+          aria-label="Termina chiamata" title="Termina">
           <span class="material-symbols-rounded">call_end</span>
         </button>
-        <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni" title="Impostazioni">
+        <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni"
+          title="Impostazioni">
           <span class="material-symbols-rounded">tune</span>
         </button>
-        
+
       </div>
     </div>
   </div>
 
   <!-- Prejoin Modal -->
-  <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
+  <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog"
+    aria-modal="true">
     <div class="prejoin" id="prejoin">
       <div class="preview">
         <div class="tile">
@@ -308,18 +768,26 @@
       <form class="form" id="joinForm">
         <div class="field" style="position:relative;">
           <div class="split">
-            <button type="button" id="btnCamMenu" class="btn-split split-left" aria-haspopup="menu" aria-expanded="false" title="Seleziona fotocamera">
-              <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
+            <button type="button" id="btnCamMenu" class="btn-split split-left"
+              aria-haspopup="menu" aria-expanded="false"
+              title="Seleziona fotocamera">
+              <span class="material-symbols-rounded"
+                aria-hidden="true">expand_less</span>
             </button>
-            <button type="button" id="btnPreviewCam" class="btn-split split-right" aria-pressed="true" title="Attiva/Disattiva fotocamera">
-              <span class="material-symbols-rounded" id="icPreviewCam">videocam</span>
+            <button type="button" id="btnPreviewCam"
+              class="btn-split split-right" aria-pressed="true"
+              title="Attiva/Disattiva fotocamera">
+              <span class="material-symbols-rounded"
+                id="icPreviewCam">videocam</span>
             </button>
           </div>
           <div id="camMenu" class="menu" role="menu" hidden></div>
         </div>
         <div class="hstack" style="margin-top:6px;">
           <button type="submit" class="btn-primary" id="startCallBtn">
-            <span class="material-symbols-rounded" style="vertical-align: middle;">call</span> Entra nella videochiamata
+            <span class="material-symbols-rounded"
+              style="vertical-align: middle;">call</span> Entra nella
+            videochiamata
           </button>
         </div>
       </form>
@@ -327,9 +795,13 @@
   </div>
 
   <!-- Settings Drawer (lightweight) -->
-  <dialog id="settingsDlg" style="border:none; border-radius:16px; padding:0; background:var(--surface); color:var(--text); width:min(520px, 92vw);">
-    <form method="dialog" style="display:grid; grid-template-rows:auto 1fr auto; max-height: 80svh;">
-      <header style="padding:12px 16px; border-bottom:1px solid var(--glass); font-weight:700;">Impostazioni</header>
+  <dialog id="settingsDlg"
+    style="border:none; border-radius:16px; padding:0; background:var(--surface); color:var(--text); width:min(520px, 92vw);">
+    <form method="dialog"
+      style="display:grid; grid-template-rows:auto 1fr auto; max-height: 80svh;">
+      <header
+        style="padding:12px 16px; border-bottom:1px solid var(--glass); font-weight:700;">
+        Impostazioni</header>
       <div style="padding:16px; display:grid; gap:12px; overflow:auto;">
         <div class="field">
           <label for="videoSource2">Fotocamera</label>
@@ -343,7 +815,8 @@
           </select>
         </div>
       </div>
-      <footer style="padding:12px 16px; border-top:1px solid var(--glass); display:flex; justify-content:flex-end; gap:8px;">
+      <footer
+        style="padding:12px 16px; border-top:1px solid var(--glass); display:flex; justify-content:flex-end; gap:8px;">
         <button class="btn-secondary" value="cancel">Chiudi</button>
       </footer>
     </form>
@@ -381,12 +854,9 @@
     const btnSwitchCam = document.getElementById('btnSwitchCam');
     const btnHangup = document.getElementById('btnHangup');
     const btnSettings = document.getElementById('btnSettings');
-    const openSettings = document.getElementById('openSettings');
     const settingsDlg = document.getElementById('settingsDlg');
     const qualitySelect = document.getElementById('quality');
     const chipRoom = document.getElementById('chipRoom');
-
-    const themeToggle = document.getElementById('toggleTheme');
 
     const getUrlParams = () => {
       const q = new URLSearchParams(location.search);
@@ -411,7 +881,7 @@
     let desiredWidth = 1280, desiredHeight = 720;
     const deviceLabelMap = new Map();
     function isRearFromTrackOrLabel(track, deviceId) {
-      try { const fm = track?.getSettings?.().facingMode; if (fm) return fm === 'environment'; } catch {}
+      try { const fm = track?.getSettings?.().facingMode; if (fm) return fm === 'environment'; } catch { }
       const label = (deviceLabelMap.get(deviceId) || '').toLowerCase();
       return /(back|rear|environment|tele|wide|ultra)/.test(label);
     }
@@ -524,7 +994,7 @@
             try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
             catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
           }
-        } catch {}
+        } catch { }
         if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
       }
       if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
@@ -585,14 +1055,14 @@
       document.getElementById('micBadgeLocal').hidden = track.enabled;
       document.getElementById('icMic').textContent = track.enabled ? 'mic' : 'mic_off';
       toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
-      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch {}
+      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch { }
     }
     async function toggleCam() {
       const track = localStream?.getVideoTracks?.()[0]; if (!track) return;
       track.enabled = !track.enabled; btnCam.setAttribute('aria-pressed', String(track.enabled));
       document.getElementById('icCam').textContent = track.enabled ? 'videocam' : 'videocam_off';
       toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
-      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch {}
+      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch { }
     }
 
     function openCamMenu() { camMenu.hidden = false; btnCamMenu.setAttribute('aria-expanded', 'true'); }
@@ -646,7 +1116,6 @@
 
     const openSettingsHandler = () => settingsDlg.showModal();
     btnSettings.addEventListener('click', openSettingsHandler);
-    openSettings.addEventListener('click', openSettingsHandler);
 
     videoSourceSelect2.addEventListener('change', async () => { currentVideoDeviceId = videoSourceSelect2.value; if (sendTransport) await switchCamera(currentVideoDeviceId); else await updatePreview(currentVideoDeviceId); });
 
@@ -664,23 +1133,11 @@
       }
     });
 
-    // THEME TOGGLE
-    const applyThemeIcon = () => {
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      themeToggle.querySelector('.material-symbols-rounded').textContent = isLight ? 'dark_mode' : 'light_mode';
-    };
-    themeToggle.addEventListener('click', () => {
-      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
-      const next = cur === 'dark' ? 'light' : 'dark';
-      document.documentElement.setAttribute('data-theme', next);
-      try { localStorage.setItem('vc-theme', next); } catch {}
-      applyThemeIcon();
-    });
+
 
     // --- UX boot
     window.addEventListener('load', async () => {
-      try { const saved = localStorage.getItem('vc-theme'); if (saved) document.documentElement.setAttribute('data-theme', saved); } catch {}
-      applyThemeIcon();
+      try { const saved = localStorage.getItem('vc-theme'); if (saved) document.documentElement.setAttribute('data-theme', saved); } catch { }
 
       const { roomId, clientType, token } = getUrlParams();
       const hasParams = !!(roomId && clientType && token);
@@ -702,7 +1159,7 @@
       const tryPlay = () => {
         const p = videoEl.play?.();
         if (p && typeof p.then === 'function') {
-          p.catch(() => {});
+          p.catch(() => { });
         }
       };
       tryPlay();
@@ -711,4 +1168,5 @@
 
   </script>
 </body>
+
 </html>
