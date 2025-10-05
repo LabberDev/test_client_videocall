@@ -164,6 +164,7 @@
       grid-template-columns: 1fr minmax(300px, 340px);
       gap: var(--gap);
       padding: var(--gap);
+      width: 100vw;
     }
 
     .panel {
@@ -171,7 +172,9 @@
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       min-height: 0;
-      max-width: 90vw;
+      width: auto;
+      margin-right: auto;
+      margin-left: auto;
       border: 1px solid var(--glass);
     }
 
@@ -191,6 +194,7 @@
       background: #000;
       isolation: isolate;
       min-height: 220px;
+      width: auto;
       max-width: 85vw;
       aspect-ratio: var(--tile-aspect);
       outline: none;
@@ -360,11 +364,13 @@
       overflow: hidden;
       display: grid;
       grid-template-columns: 1fr 360px;
-      border: 1px solid var(--glass);
+      border: 0px solid var(--glass);
     }
 
     .preview {
       max-height: 48vh;
+      margin: 10px;
+      max-width: 50vw;
       background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
     }
 
@@ -374,7 +380,7 @@
 
     .prejoin .form {
       padding: 16px;
-      border-left: 1px solid var(--glass);
+      border-left: 0px solid var(--glass);
       display: grid;
       gap: 12px;
     }
@@ -394,7 +400,7 @@
       width: 100%;
       padding: 10px 12px;
       border-radius: 12px;
-      border: 1px solid var(--glass);
+      border: 0px solid var(--glass);
       background: var(--surface-2);
       color: var(--text);
     }
@@ -500,25 +506,49 @@
       border-radius: 10px;
     }
 
-    .split-right[aria-pressed="true"] {
+    /* --- SPLIT BUTTON: icone centrate, altezza fissa --- */
+    .split {
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .btn-split {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      padding: 0 14px;
+      line-height: 0;
+    }
+
+    .btn-split .material-symbols-rounded {
+      line-height: 1;
+      display: inline-block;
+    }
+
+    .split-right {
+      border-radius: 50px;
+      background-color: #d8d7d7;
     }
 
     .split-right[aria-pressed="false"] {
-      opacity: .7;
-      background-color: #e97b7b;
+      opacity: .85;
+      background-color: #d36363;
     }
 
-    .split-left {
-      border-right: 1px solid var(--glass);
-      background: linear-gradient(180deg, color-mix(in oklab, var(--surface-3), white 3%), color-mix(in oklab, var(--surface-3), black 4%));
+    /* usa :has per riflettere lo stato del destro anche sul sinistro */
+    .split:has(.split-right[aria-pressed="false"]) {
+      background-color: #e97b7bc6;
     }
 
+    /* --- MENU: apri sopra al bottone split-left --- */
     .menu {
       position: absolute;
-      top: 100%;
-      margin-top: 8px;
-      left: 0;
-      min-width: 260px;
+      bottom: 100%;
+      margin-bottom: 8px;
+      top: auto;
+      margin-top: 0;
       background: var(--surface);
       border: 1px solid var(--glass);
       border-radius: 12px;
@@ -526,6 +556,7 @@
       z-index: 70;
       padding: 6px;
     }
+
 
     .menu button {
       width: 100%;
@@ -643,7 +674,6 @@
       left: 50%;
       transform: translateX(-50%);
     }
-    }
 
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
@@ -691,17 +721,10 @@
         <div class="tile" id="localTile" tabindex="0">
           <video id="localVideo" autoplay muted playsinline></video>
           <div class="badge">Tu</div>
-          <div class="muted-indicator" id="micBadgeLocal"
-            title="Microfono disattivato" hidden>
-            <span class="material-symbols-rounded">mic_off</span>
-          </div>
         </div>
         <div class="tile" id="remoteTile" tabindex="0">
           <video id="remoteVideo" autoplay playsinline></video>
           <div class="badge" id="remoteLabel">Ospite</div>
-          <div class="muted-indicator" id="micBadgeRemote" hidden>
-            <span class="material-symbols-rounded">mic_off</span>
-          </div>
         </div>
       </section>
 
