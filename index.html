@@ -12,7 +12,9 @@
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <style>
-    /* THEME TOKENS */
+    /* =========================
+   THEME TOKENS
+   ========================= */
     :root {
       --bg: #0b0f14;
       --surface: #11161c;
@@ -20,7 +22,7 @@
       --surface-3: #202833;
       --text: #e7eef7;
       --text-dim: #b7c2cf;
-      --primary: #5c9dff;
+      --primary: black;
       --danger: #ff5c7a;
       --ok: #3ddc97;
       --warn: #ffce5c;
@@ -33,6 +35,7 @@
       --tile-aspect: 16 / 9;
     }
 
+    /* light (auto) */
     @media (prefers-color-scheme: light) {
       :root {
         --bg: #f6f8fb;
@@ -50,6 +53,7 @@
       }
     }
 
+    /* light (forzato) */
     [data-theme="light"] {
       --bg: #f6f8fb;
       --surface: #ffffff;
@@ -65,6 +69,9 @@
       --shadow: 0 8px 28px rgba(15, 23, 32, .12);
     }
 
+    /* =========================
+   RESET / BASE
+   ========================= */
     *,
     *::before,
     *::after {
@@ -78,7 +85,8 @@
 
     body {
       margin: 0;
-      background: radial-gradient(1200px 800px at 80% -10%, rgba(92, 157, 255, .12), transparent 40%),
+      background:
+        radial-gradient(1200px 800px at 80% -10%, rgba(92, 157, 255, .12), transparent 40%),
         radial-gradient(1000px 700px at 10% 110%, rgba(61, 220, 151, .10), transparent 40%),
         var(--bg);
       color: var(--text);
@@ -96,6 +104,9 @@
       color: inherit;
     }
 
+    /* =========================
+   APP LAYOUT
+   ========================= */
     .app {
       display: grid;
       grid-template-rows: auto 1fr auto;
@@ -133,7 +144,7 @@
     }
 
     .brand .name {
-      opacity: .95
+      opacity: .95;
     }
 
     .spacer {
@@ -151,13 +162,6 @@
       box-shadow: var(--shadow-sm);
     }
 
-    .top-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-
     /* Main */
     .main {
       display: grid;
@@ -173,8 +177,7 @@
       box-shadow: var(--shadow);
       min-height: 0;
       width: auto;
-      margin-right: auto;
-      margin-left: auto;
+      margin-inline: auto;
       border: 1px solid var(--glass);
     }
 
@@ -195,7 +198,6 @@
       isolation: isolate;
       min-height: 220px;
       width: auto;
-      max-width: 85vw;
       aspect-ratio: var(--tile-aspect);
       outline: none;
     }
@@ -253,9 +255,12 @@
       box-shadow: var(--shadow-sm);
     }
 
-    /* Active speaker hook (toggle by adding data-speaking="true" to .tile) */
+    /* Active speaker */
     .tile[data-speaking="true"] {
-      box-shadow: 0 0 0 2px color-mix(in oklab, var(--ok), white 15%), 0 0 0 8px color-mix(in oklab, var(--ok), transparent 85%), var(--shadow);
+      box-shadow:
+        0 0 0 2px color-mix(in oklab, var(--ok), white 15%),
+        0 0 0 8px color-mix(in oklab, var(--ok), transparent 85%),
+        var(--shadow);
     }
 
     /* Side panel */
@@ -344,47 +349,105 @@
       font-variation-settings: 'FILL' 1;
     }
 
-    /* Prejoin Sheet */
+    /* =========================
+   PREJOIN (modal + preview)
+   ========================= */
     .prejoin-backdrop {
       position: fixed;
       inset: 0;
+      width: 100%;
       background: rgba(0, 0, 0, .6);
-      backdrop-filter: blur(6px);
+      backdrop-filter: blur(16px);
       display: grid;
       place-items: center;
       z-index: 50;
     }
 
     .prejoin {
-      width: min(980px, 94vw);
-      max-height: 90vh;
+      width: min(980px, 96vw);
+      max-height: 92svh;
       background: var(--surface);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       overflow: hidden;
       display: grid;
+      gap: 0;
+      border: 1px solid var(--glass);
       grid-template-columns: 1fr 360px;
-      border: 0px solid var(--glass);
-    }
-
-    .preview {
-      max-height: 48vh;
-      margin: 10px;
-      max-width: 50vw;
-      background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
+      /* desktop default */
     }
 
     .prejoin .preview {
-      min-height: 280px;
-    }
-
-    .prejoin .form {
-      padding: 16px;
-      border-left: 0px solid var(--glass);
+      margin: 0;
+      padding: 12px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, .02), transparent);
       display: grid;
-      gap: 12px;
+      place-items: center;
     }
 
+    .preview .tile,
+    .prejoin .preview .tile {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      aspect-ratio: 16 / 9;
+      /* desktop default */
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .preview :where(#prejoinPreview) {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+    }
+
+    /* Form (right column) */
+    .prejoin .form {
+      padding: clamp(16px, 2.5vw, 22px);
+      display: grid;
+      gap: 14px;
+      align-content: center;
+      justify-items: center;
+      text-align: center;
+      border-left: 1px solid var(--glass);
+    }
+
+    .prejoin .form .form-title {
+      margin: 0 0 8px;
+      font-size: 30px;
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .prejoin-mobile-header {
+      display: none;
+      padding: 10px;
+      width: 100%;
+      font-size: 25px;
+      font-weight: 800;
+      text-align: center;
+      color: var(--text);
+    }
+
+    /* Overlay controls INSIDE preview */
+    /* valido per anteprima e in-call */
+    .tile .overlay {
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+      z-index: 10;
+    }
+
+    /* =========================
+   FORM ELEMENTS & BUTTONS
+   ========================= */
     .field {
       display: grid;
       gap: 6px;
@@ -400,24 +463,23 @@
       width: 100%;
       padding: 10px 12px;
       border-radius: 12px;
-      border: 0px solid var(--glass);
+      border: 0 solid var(--glass);
       background: var(--surface-2);
       color: var(--text);
     }
 
     .btn-primary {
       padding: 12px 20px;
-      margin-right: auto;
-      margin-left: auto;
-      background: var(--primary);
+      margin-inline: auto;
+      background: transparent;
       border: none;
-      color: white;
       border-radius: 30px;
       cursor: pointer;
       font-weight: 800;
       letter-spacing: .2px;
-      box-shadow: 0 8px 24px color-mix(in oklab, var(--primary), transparent 75%);
+      box-shadow: 0 8px 24px color-mix(in oklab, black, transparent 75%);
       transition: transform .06s ease, box-shadow .2s ease;
+      backdrop-filter: blur(6px);
     }
 
     .btn-primary:hover {
@@ -444,13 +506,138 @@
       text-align: center;
     }
 
-    .preview .tile {
-      height: 100%;
-      border-radius: 0;
-      aspect-ratio: var(--tile-aspect);
+    /* =========================
+   SPLIT BUTTON (base + overlay)
+   ========================= */
+    .split {
+      height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      width: auto;
+      margin-inline: auto;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--glass);
+      background: var(--surface-2);
     }
 
-    /* Snackbar */
+    .btn-split {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 44px;
+      padding: 0 14px;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      cursor: pointer;
+      transition: filter .2s ease;
+      line-height: 0;
+    }
+
+    .btn-split:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-split:focus-visible {
+      outline: none;
+      box-shadow: var(--ring);
+      border-radius: 10px;
+    }
+
+    .btn-split .material-symbols-rounded {
+      line-height: 1;
+      display: inline-block;
+    }
+
+    .split-right {
+      border-radius: 50px;
+      background-color: #d8d7d7;
+    }
+
+    .split-right[aria-pressed="false"] {
+      opacity: .85;
+      background-color: #d36363;
+    }
+
+    /* riflette lo stato anche sul sinistro */
+    .split:has(.split-right[aria-pressed="false"]) {
+      background-color: #e97b7bc6;
+    }
+
+    /* Variante overlay */
+    .split.split--overlay {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(6px);
+    }
+
+    .split.split--overlay .btn-split {
+      color: #fff;
+    }
+
+    .split.split--overlay .split-right {
+      background: transparent;
+      border-left: 1px solid rgba(255, 255, 255, .35);
+      border-radius: 0;
+    }
+
+    .split.split--overlay.is-off {
+      background: var(--danger);
+      border-color: var(--danger);
+    }
+
+    .split.split--overlay.is-off .split-right {
+      background: rgba(0, 0, 0, .08);
+      border-left-color: rgba(255, 255, 255, .25);
+    }
+
+    /* =========================
+   MENUS (base + overlay)
+   ========================= */
+    .menu {
+      position: absolute;
+      background: var(--surface);
+      border: 1px solid var(--glass);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      z-index: 70;
+      padding: 6px;
+      /* default: sopra al bottone (per split-left) */
+      bottom: 100%;
+      margin-bottom: 8px;
+    }
+
+    .menu button {
+      width: 100%;
+      text-align: left;
+      padding: 10px 12px;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .menu button:hover,
+    .menu button:focus {
+      outline: none;
+      background: var(--surface-2);
+    }
+
+    /* overlay positioning helper */
+    .menu--overlay {
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 260px;
+    }
+
+    /* =========================
+   SNACKBAR
+   ========================= */
     .snackbar {
       position: fixed;
       left: 50%;
@@ -472,110 +659,24 @@
       opacity: 1;
     }
 
-    /* Split button fotocamera (prejoin) */
-    .split {
-      width: auto;
-      margin-right: auto;
-      margin-left: auto;
-      align-items: center;
-      display: inline-flex;
-      border-radius: 25px;
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--glass);
-      background: var(--surface-2);
+    /* =========================
+   ICON TOGGLES
+   ========================= */
+    #btnCamMenu {
+      position: relative;
     }
 
-    .btn-split {
-      padding: 10px 12px;
-      align-items: center;
-      background: transparent;
-      border: 0;
-      color: var(--text);
-      cursor: pointer;
-      transition: filter .2s ease;
+    #btnCamMenu .material-symbols-rounded {
+      transition: transform .2s ease;
     }
 
-    .btn-split:hover {
-      filter: brightness(1.05);
+    #btnCamMenu[aria-expanded="true"] .material-symbols-rounded {
+      transform: rotate(180deg);
     }
 
-    .btn-split:focus-visible {
-      outline: none;
-      box-shadow: var(--ring);
-      border-radius: 10px;
-    }
-
-    /* --- SPLIT BUTTON: icone centrate, altezza fissa --- */
-    .split {
-      height: 44px;
-      display: inline-flex;
-      align-items: center;
-    }
-
-    .btn-split {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      height: 44px;
-      padding: 0 14px;
-      line-height: 0;
-    }
-
-    .btn-split .material-symbols-rounded {
-      line-height: 1;
-      display: inline-block;
-    }
-
-    .split-right {
-      border-radius: 50px;
-      background-color: #d8d7d7;
-    }
-
-    .split-right[aria-pressed="false"] {
-      opacity: .85;
-      background-color: #d36363;
-    }
-
-    /* usa :has per riflettere lo stato del destro anche sul sinistro */
-    .split:has(.split-right[aria-pressed="false"]) {
-      background-color: #e97b7bc6;
-    }
-
-    /* --- MENU: apri sopra al bottone split-left --- */
-    .menu {
-      position: absolute;
-      bottom: 100%;
-      margin-bottom: 8px;
-      top: auto;
-      margin-top: 0;
-      background: var(--surface);
-      border: 1px solid var(--glass);
-      border-radius: 12px;
-      box-shadow: var(--shadow);
-      z-index: 70;
-      padding: 6px;
-    }
-
-
-    .menu button {
-      width: 100%;
-      text-align: left;
-      padding: 10px 12px;
-      background: transparent;
-      border: 0;
-      color: var(--text);
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .menu button:hover,
-    .menu button:focus {
-      outline: none;
-      background: var(--surface-2);
-    }
-
-    /* Mobile */
+    /* =========================
+   RESPONSIVE
+   ========================= */
     @media (max-width: 1024px) {
       .main {
         grid-template-columns: 1fr;
@@ -589,33 +690,56 @@
         grid-template-columns: 1fr;
       }
 
+      .ctrl-btn {
+        --size: 48px;
+      }
+
       .prejoin {
         grid-template-columns: 1fr;
+        grid-auto-rows: auto;
+      }
+
+      .prejoin-mobile-header {
+        display: block;
+      }
+
+      .prejoin .preview {
+        order: 2;
+        padding: 12px 12px 8px;
       }
 
       .prejoin .form {
+        order: 3;
         border-left: 0;
         border-top: 1px solid var(--glass);
       }
 
-      .ctrl-btn {
-        --size: 48px;
+      .prejoin .form .form-title {
+        display: none;
+      }
+
+      /* video verticale su mobile */
+      .prejoin .preview .tile {
+        width: 90%;
+        aspect-ratio: 9 / 16;
+        height: auto;
+        max-height: 50vh;
+        margin: 0 auto;
+      }
+
+      .menu--overlay {
+        min-width: 88vw;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+
+      #startCallBtn.btn-primary {
+        margin-top: 8px;
       }
     }
 
-    /* Mobile prejoin: verticale, sfondo bianco dietro */
     @media (max-width: 640px) {
-      .prejoin-backdrop {
-        background: #fff !important;
-        backdrop-filter: none !important;
-      }
-
-      .prejoin {
-        background: var(--surface);
-      }
-
       .preview {
-        height: 32svh !important;
         display: grid;
         place-items: center;
         padding: 0 12px;
@@ -623,19 +747,12 @@
       }
 
       .preview .tile {
-        width: clamp(240px, 88vw, 360px);
+        width: 80%;
         aspect-ratio: 9 / 16;
         border-radius: 14px;
         margin: 0 auto;
         overflow: hidden;
         box-shadow: var(--shadow);
-      }
-
-      #prejoinPreview {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        object-position: center;
       }
 
       .menu {
@@ -645,55 +762,12 @@
       }
     }
 
-    .prejoin {
-      background: var(--surface);
-    }
-
-    .preview {
-      max-height: 30vh !important;
-      display: grid;
-      place-items: center;
-      padding: 0 12px;
-    }
-
-    .preview .tile {
-      aspect-ratio: 11 / 16;
-      border-radius: 12px;
-      margin: 0 auto;
-      overflow: hidden;
-    }
-
-    #prejoinPreview {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .menu {
-      min-width: 88vw;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
     /* Reduced motion */
     @media (prefers-reduced-motion: reduce) {
       * {
         transition: none !important;
         animation: none !important;
       }
-    }
-
-    /* Cam menu chevron animation */
-    #btnCamMenu {
-      position: relative;
-    }
-
-    #btnCamMenu .material-symbols-rounded {
-      transition: transform .2s ease;
-    }
-
-    #btnCamMenu[aria-expanded="true"] .material-symbols-rounded {
-      transform: rotate(180deg);
     }
   </style>
 </head>
@@ -707,12 +781,6 @@
         <span class="name">Videocall</span>
       </div>
       <div class="spacer"></div>
-      <div class="top-actions">
-        <span class="chip" title="ID stanza"><span
-            class="material-symbols-rounded"
-            aria-hidden="true">meeting_room</span><span
-            id="chipRoom">—</span></span>
-      </div>
     </header>
 
     <!-- Main area -->
@@ -720,6 +788,49 @@
       <section class="panel stage" aria-label="Griglia video">
         <div class="tile" id="localTile" tabindex="0">
           <video id="localVideo" autoplay muted playsinline></video>
+          <!-- Overlay controlli IN-CALL -->
+          <div class="overlay" id="incallOverlay">
+            <!-- Split Fotocamera -->
+            <div class="split split--overlay" id="incallSplitCam"
+              aria-label="Controlli fotocamera (in-call)">
+              <button type="button" id="incallBtnCamMenu"
+                class="btn-split split-left" aria-haspopup="menu"
+                aria-expanded="false" title="Seleziona fotocamera">
+                <span class="material-symbols-rounded"
+                  aria-hidden="true">expand_less</span>
+              </button>
+              <button type="button" id="incallBtnCamToggle"
+                class="btn-split split-right" aria-pressed="true"
+                title="Attiva/Disattiva fotocamera">
+                <span class="material-symbols-rounded"
+                  id="incallIcCam">videocam</span>
+              </button>
+            </div>
+
+            <!-- Split Microfono -->
+            <div class="split split--overlay" id="incallSplitMic"
+              aria-label="Controlli microfono (in-call)">
+              <button type="button" id="incallBtnMicMenu"
+                class="btn-split split-left" aria-haspopup="menu"
+                aria-expanded="false" title="Seleziona microfono">
+                <span class="material-symbols-rounded"
+                  aria-hidden="true">expand_less</span>
+              </button>
+              <button type="button" id="incallBtnMicToggle"
+                class="btn-split split-right" aria-pressed="true"
+                title="Attiva/Disattiva microfono">
+                <span class="material-symbols-rounded"
+                  id="incallIcMic">mic</span>
+              </button>
+            </div>
+
+            <!-- Menù dispositivi (aprono sopra agli split) -->
+            <div id="incallCamMenu" class="menu menu--overlay" role="menu"
+              hidden></div>
+            <div id="incallMicMenu" class="menu menu--overlay" role="menu"
+              hidden></div>
+          </div>
+
           <div class="badge">Tu</div>
         </div>
         <div class="tile" id="remoteTile" tabindex="0">
@@ -727,52 +838,15 @@
           <div class="badge" id="remoteLabel">Ospite</div>
         </div>
       </section>
-
-      <aside class="panel side" aria-label="Pannello laterale" id="sidePanel">
-        <header>Dettagli riunione</header>
-        <div class="content">
-          <div class="kv"><label>Room ID</label>
-            <div id="uiRoomId" style="font-weight:600;"></div>
-          </div>
-          <div class="kv"><label>Client</label>
-            <div id="uiClientType"></div>
-          </div>
-          <div class="kv"><label>Stato</label>
-            <div id="uiStatus">Non connesso</div>
-          </div>
-          <hr style="border-color: var(--glass); margin: 12px 0;">
-          <div style="font-size:.9rem; color: var(--text-dim)">Suggerimento:
-            puoi passare i parametri via URL, es.
-            <code>?roomId=room789_1&amp;clientType=guest&amp;token=guest_1</code>
-          </div>
-        </div>
-      </aside>
     </main>
 
     <!-- Bottom Controls -->
     <div class="controls" role="toolbar" aria-label="Controlli chiamata">
       <div class="pill">
-        <button class="ctrl-btn" id="btnMic"
-          aria-label="Attiva/Disattiva microfono" aria-pressed="true"
-          title="Microfono">
-          <span class="material-symbols-rounded" id="icMic">mic</span>
-        </button>
-        <button class="ctrl-btn" id="btnCam"
-          aria-label="Attiva/Disattiva fotocamera" aria-pressed="true"
-          title="Fotocamera">
-          <span class="material-symbols-rounded" id="icCam">videocam</span>
-        </button>
-        <button class="ctrl-btn" id="btnSwitchCam"
-          aria-label="Cambia fotocamera" title="Cambia fotocamera">
-          <span class="material-symbols-rounded">cameraswitch</span>
-        </button>
+
         <button class="ctrl-btn danger" id="btnHangup"
           aria-label="Termina chiamata" title="Termina">
           <span class="material-symbols-rounded">call_end</span>
-        </button>
-        <button class="ctrl-btn" id="btnSettings" aria-label="Impostazioni"
-          title="Impostazioni">
-          <span class="material-symbols-rounded">tune</span>
         </button>
 
       </div>
@@ -783,29 +857,58 @@
   <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog"
     aria-modal="true">
     <div class="prejoin" id="prejoin">
+      <div class="prejoin-mobile-header">Verifica Documentazione Check-in</div>
       <div class="preview">
         <div class="tile">
           <video id="prejoinPreview" autoplay muted playsinline></video>
+
+          <!-- Overlay controls -->
+          <div class="overlay">
+            <!-- Split Fotocamera (trasparente, bordo/icone bianchi) -->
+            <div class="split split--overlay" id="splitCamOverlay"
+              aria-label="Controlli fotocamera">
+              <button type="button" id="btnCamMenu" class="btn-split split-left"
+                aria-haspopup="menu" aria-expanded="false"
+                title="Seleziona fotocamera">
+                <span class="material-symbols-rounded"
+                  aria-hidden="true">expand_less</span>
+              </button>
+              <button type="button" id="btnPreviewCam"
+                class="btn-split split-right" aria-pressed="true"
+                title="Attiva/Disattiva fotocamera">
+                <span class="material-symbols-rounded"
+                  id="icPreviewCam">videocam</span>
+              </button>
+            </div>
+
+            <!-- Split Microfono (trasparente, bordo/icone bianchi) -->
+            <div class="split split--overlay" id="splitMicOverlay"
+              aria-label="Controlli microfono">
+              <button type="button" id="btnMicMenu" class="btn-split split-left"
+                aria-haspopup="menu" aria-expanded="false"
+                title="Seleziona microfono">
+                <span class="material-symbols-rounded"
+                  aria-hidden="true">expand_less</span>
+              </button>
+              <button type="button" id="btnPreviewMic"
+                class="btn-split split-right" aria-pressed="true"
+                title="Attiva/Disattiva microfono">
+                <span class="material-symbols-rounded"
+                  id="icPreviewMic">mic</span>
+              </button>
+            </div>
+
+            <!-- Menù dispositivi (aprono sopra agli split) -->
+            <div id="camMenu" class="menu menu--overlay" role="menu" hidden>
+            </div>
+            <div id="micMenu" class="menu menu--overlay" role="menu" hidden>
+            </div>
+          </div>
         </div>
       </div>
+
       <form class="form" id="joinForm">
-        <div class="field" style="position:relative;">
-          <div class="split">
-            <button type="button" id="btnCamMenu" class="btn-split split-left"
-              aria-haspopup="menu" aria-expanded="false"
-              title="Seleziona fotocamera">
-              <span class="material-symbols-rounded"
-                aria-hidden="true">expand_less</span>
-            </button>
-            <button type="button" id="btnPreviewCam"
-              class="btn-split split-right" aria-pressed="true"
-              title="Attiva/Disattiva fotocamera">
-              <span class="material-symbols-rounded"
-                id="icPreviewCam">videocam</span>
-            </button>
-          </div>
-          <div id="camMenu" class="menu" role="menu" hidden></div>
-        </div>
+        <h3 class="form-title">Verifica Documentazione Check-in</h3>
         <div class="hstack" style="margin-top:6px;">
           <button type="submit" class="btn-primary" id="startCallBtn">
             <span class="material-symbols-rounded"
@@ -817,33 +920,7 @@
     </div>
   </div>
 
-  <!-- Settings Drawer (lightweight) -->
-  <dialog id="settingsDlg"
-    style="border:none; border-radius:16px; padding:0; background:var(--surface); color:var(--text); width:min(520px, 92vw);">
-    <form method="dialog"
-      style="display:grid; grid-template-rows:auto 1fr auto; max-height: 80svh;">
-      <header
-        style="padding:12px 16px; border-bottom:1px solid var(--glass); font-weight:700;">
-        Impostazioni</header>
-      <div style="padding:16px; display:grid; gap:12px; overflow:auto;">
-        <div class="field">
-          <label for="videoSource2">Fotocamera</label>
-          <select id="videoSource2" class="select"></select>
-        </div>
-        <div class="field">
-          <label for="quality">Qualità video</label>
-          <select id="quality" class="select">
-            <option value="1280x720">HD 720p</option>
-            <option value="640x360">SD 360p</option>
-          </select>
-        </div>
-      </div>
-      <footer
-        style="padding:12px 16px; border-top:1px solid var(--glass); display:flex; justify-content:flex-end; gap:8px;">
-        <button class="btn-secondary" value="cancel">Chiudi</button>
-      </footer>
-    </form>
-  </dialog>
+
 
   <div class="snackbar" id="snackbar" role="status" aria-live="polite"></div>
 
@@ -861,25 +938,36 @@
     const icPreviewCam = document.getElementById('icPreviewCam');
     const camMenu = document.getElementById('camMenu');
 
+    const btnMicMenu = document.getElementById('btnMicMenu');
+    const btnPreviewMic = document.getElementById('btnPreviewMic');
+    const icPreviewMic = document.getElementById('icPreviewMic');
+    const micMenu = document.getElementById('micMenu');
+
+    const splitCamOverlay = document.getElementById('splitCamOverlay');
+    const splitMicOverlay = document.getElementById('splitMicOverlay');
+
     const joinForm = document.getElementById('joinForm');
-    const videoSourceSelect2 = document.getElementById('videoSource2');
 
     const localVideoElem = document.getElementById('localVideo');
     const remoteVideoElem = document.getElementById('remoteVideo');
-    const remoteLabel = document.getElementById('remoteLabel');
-    const uiRoomId = document.getElementById('uiRoomId');
-    const uiClientType = document.getElementById('uiClientType');
     const uiStatus = document.getElementById('uiStatus');
     const statusDot = document.getElementById('statusDot');
 
-    const btnMic = document.getElementById('btnMic');
-    const btnCam = document.getElementById('btnCam');
-    const btnSwitchCam = document.getElementById('btnSwitchCam');
     const btnHangup = document.getElementById('btnHangup');
-    const btnSettings = document.getElementById('btnSettings');
-    const settingsDlg = document.getElementById('settingsDlg');
-    const qualitySelect = document.getElementById('quality');
-    const chipRoom = document.getElementById('chipRoom');
+
+    // In-call overlay controls
+    const incallSplitCam = document.getElementById('incallSplitCam');
+    const incallSplitMic = document.getElementById('incallSplitMic');
+
+    const incallBtnCamMenu = document.getElementById('incallBtnCamMenu');
+    const incallBtnCamToggle = document.getElementById('incallBtnCamToggle');
+    const incallIcCam = document.getElementById('incallIcCam');
+    const incallCamMenu = document.getElementById('incallCamMenu');
+
+    const incallBtnMicMenu = document.getElementById('incallBtnMicMenu');
+    const incallBtnMicToggle = document.getElementById('incallBtnMicToggle');
+    const incallIcMic = document.getElementById('incallIcMic');
+    const incallMicMenu = document.getElementById('incallMicMenu');
 
     const getUrlParams = () => {
       const q = new URLSearchParams(location.search);
@@ -897,6 +985,8 @@
 
     // --- Stato
     let socket, device, sendTransport, recvTransport, localStream, previewStream;
+    let previewAudioStream = null;
+    let currentAudioDeviceId = '';
     let audioProducer, videoProducer;
     const ownProducerIds = new Set();
     const consumedProducerIds = new Set();
@@ -951,28 +1041,68 @@
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(d => d.kind === 'videoinput');
       videoDevices.forEach(d => deviceLabelMap.set(d.deviceId, d.label || ''));
-      if (videoSourceSelect2) {
-        videoSourceSelect2.innerHTML = '';
-        videoDevices.forEach((d, i) => {
-          const opt = document.createElement('option'); opt.value = d.deviceId; opt.textContent = d.label || `Fotocamera ${i + 1}`; videoSourceSelect2.appendChild(opt);
-        });
-        if (currentVideoDeviceId) videoSourceSelect2.value = currentVideoDeviceId;
-      }
       camMenu.innerHTML = '';
       if (!videoDevices.length) {
         const empty = document.createElement('div'); empty.style.padding = '10px 12px'; empty.style.color = 'var(--text-dim)'; empty.textContent = 'Nessuna fotocamera trovata'; camMenu.appendChild(empty); return videoDevices;
       }
       videoDevices.forEach((d, i) => {
         const b = document.createElement('button'); const label = d.label || `Fotocamera ${i + 1}`; b.type = 'button'; b.role = 'menuitem'; b.textContent = label; b.dataset.deviceId = d.deviceId;
-        b.addEventListener('click', async () => { currentVideoDeviceId = d.deviceId; if (videoSourceSelect2) videoSourceSelect2.value = d.deviceId; await updatePreview(currentVideoDeviceId); closeCamMenu(); }); camMenu.appendChild(b);
+        b.addEventListener('click', async () => {
+          currentVideoDeviceId = d.deviceId;
+          await updatePreview(currentVideoDeviceId); closeCamMenu();
+        }); camMenu.appendChild(b);
       });
       return videoDevices;
     }
+
+    async function enumerateMicrophones() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+      // Popola menu microfono
+      micMenu.innerHTML = '';
+      if (!audioInputs.length) {
+        const empty = document.createElement('div');
+        empty.style.padding = '10px 12px';
+        empty.style.color = 'var(--text-dim)';
+        empty.textContent = 'Nessun microfono trovato';
+        micMenu.appendChild(empty);
+        return audioInputs;
+      }
+
+      audioInputs.forEach((d, i) => {
+        const b = document.createElement('button');
+        const label = d.label || `Microfono ${i + 1}`;
+        b.type = 'button';
+        b.role = 'menuitem';
+        b.textContent = label;
+        b.dataset.deviceId = d.deviceId;
+        b.addEventListener('click', async () => {
+          currentAudioDeviceId = d.deviceId;
+          await updatePreviewAudio(currentAudioDeviceId, true);
+          closeMicMenu();
+        });
+        micMenu.appendChild(b);
+      });
+
+      return audioInputs;
+    }
+
 
     async function getUserMediaFor(deviceId, preview = false) {
       const constraints = {
         video: deviceId ? { deviceId: { exact: deviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } } : { width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
         audio: preview ? false : { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      };
+      return await navigator.mediaDevices.getUserMedia(constraints);
+    }
+
+    async function getUserAudioFor(deviceId) {
+      const constraints = {
+        audio: deviceId
+          ? { deviceId: { exact: deviceId }, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          : { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+        video: false
       };
       return await navigator.mediaDevices.getUserMedia(constraints);
     }
@@ -986,6 +1116,22 @@
         const vtrackPrev = previewStream.getVideoTracks()[0];
         setMirror(prejoinPreview, isRearFromTrackOrLabel(vtrackPrev, deviceId || currentVideoDeviceId));
       } catch (e) { console.warn('Anteprima non disponibile:', e); }
+    }
+
+    async function updatePreviewAudio(deviceId, ensureOn = false) {
+      try {
+        if (previewAudioStream) previewAudioStream.getTracks().forEach(t => t.stop());
+        previewAudioStream = await getUserAudioFor(deviceId || currentAudioDeviceId);
+        const atrack = previewAudioStream.getAudioTracks()[0];
+        // Mantieni stato ON/OFF se l’utente ha già premuto
+        if (!ensureOn && btnPreviewMic.getAttribute('aria-pressed') === 'false') {
+          atrack.enabled = false;
+        }
+        // Non riproduciamo audio nell’anteprima (niente echo), ma teniamo il track “armato”.
+        reflectOverlayStates();
+      } catch (e) {
+        console.warn('Anteprima audio non disponibile:', e);
+      }
     }
 
     async function buildLocalStream() {
@@ -1048,15 +1194,15 @@
       const waitForConnect = s => new Promise(res => s.connected ? res() : s.once('connect', res));
       await waitForConnect(socket);
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
-      uiRoomId.textContent = roomId; chipRoom.textContent = roomId; uiClientType.textContent = clientType; setStatus(true, 'Connessione…');
       const { canJoinRoom, existingProducers } = await joinRoom(roomId, clientType, token);
       if (!canJoinRoom) { setStatus(false, 'Accesso negato'); toast('Accesso alla room negato'); socket?.disconnect(); return; }
       const routerRtpCapabilities = await getRouterCapabilities();
       device = new Device(); await device.load({ routerRtpCapabilities });
       if (!device.canProduce('audio') && !device.canProduce('video')) { toast('Questo device non può produrre audio o video.'); return; }
       localStream = await buildLocalStream();
-      sendTransport = await createTransport('send'); setupTransportListeners(sendTransport, 'send'); sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); uiStatus.textContent = `Send: ${state}`; });
-      recvTransport = await createTransport('recv'); setupTransportListeners(recvTransport, 'recv'); recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); uiStatus.textContent = `Recv: ${state}`; });
+      reflectIncallOverlayStates();
+      sendTransport = await createTransport('send'); setupTransportListeners(sendTransport, 'send'); sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); });
+      recvTransport = await createTransport('recv'); setupTransportListeners(recvTransport, 'recv'); recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); });
       await produceTracks();
       for (const p of (existingProducers || [])) { const prodId = p.producerId ?? p; await subscribeToProducer(prodId, p?.appData?.socketId); }
       socket.on('newProducer', ({ producerId }) => { const doSub = () => subscribeToProducer(producerId).catch(() => { }); setTimeout(doSub, 0); setTimeout(doSub, 300); });
@@ -1069,30 +1215,153 @@
       toast('Videochiamata avviata');
     }
 
-    function setStatus(connected, label) { statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)'; uiStatus.textContent = label || (connected ? 'Connesso' : 'Disconnesso'); }
-    function toast(msg, ms = 1800) { snackbar.textContent = msg; snackbar.classList.add('show'); setTimeout(() => snackbar.classList.remove('show'), ms); }
+    function reflectIncallOverlayStates() {
+  const camOn = localStream?.getVideoTracks?.()[0]?.enabled !== false;
+  const micOn = localStream?.getAudioTracks?.()[0]?.enabled !== false;
+  incallSplitCam.classList.toggle('is-off', !camOn);
+  incallSplitMic.classList.toggle('is-off', !micOn);
+  incallIcCam.textContent = camOn ? 'videocam' : 'videocam_off';
+  incallIcMic.textContent = micOn ? 'mic' : 'mic_off';
+  incallBtnCamToggle.setAttribute('aria-pressed', String(camOn));
+  incallBtnMicToggle.setAttribute('aria-pressed', String(micOn));
+}
 
-    async function toggleMic() {
-      const track = localStream?.getAudioTracks?.()[0]; if (!track) return;
-      track.enabled = !track.enabled; btnMic.setAttribute('aria-pressed', String(track.enabled));
-      document.getElementById('micBadgeLocal').hidden = track.enabled;
-      document.getElementById('icMic').textContent = track.enabled ? 'mic' : 'mic_off';
-      toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
-      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch { }
-    }
-    async function toggleCam() {
-      const track = localStream?.getVideoTracks?.()[0]; if (!track) return;
-      track.enabled = !track.enabled; btnCam.setAttribute('aria-pressed', String(track.enabled));
-      document.getElementById('icCam').textContent = track.enabled ? 'videocam' : 'videocam_off';
-      toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
-      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch { }
-    }
+async function toggleCamIncall() {
+  const track = localStream?.getVideoTracks?.()[0];
+  if (!track) return;
+  track.enabled = !track.enabled;
+  try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch {}
+  reflectIncallOverlayStates();
+  toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
+}
+
+async function toggleMicIncall() {
+  const track = localStream?.getAudioTracks?.()[0];
+  if (!track) return;
+  track.enabled = !track.enabled;
+  try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch {}
+  reflectIncallOverlayStates();
+  toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
+}
+
+function openIncallCamMenu(){ incallCamMenu.hidden = false; incallBtnCamMenu.setAttribute('aria-expanded','true'); }
+function closeIncallCamMenu(){ incallCamMenu.hidden = true; incallBtnCamMenu.setAttribute('aria-expanded','false'); }
+function toggleIncallCamMenu(){ incallCamMenu.hidden ? openIncallCamMenu() : closeIncallCamMenu(); }
+
+function openIncallMicMenu(){ incallMicMenu.hidden = false; incallBtnMicMenu.setAttribute('aria-expanded','true'); }
+function closeIncallMicMenu(){ incallMicMenu.hidden = true; incallBtnMicMenu.setAttribute('aria-expanded','false'); }
+function toggleIncallMicMenu(){ incallMicMenu.hidden ? openIncallMicMenu() : closeIncallMicMenu(); }
+
+/* Popola i menu dispositivi IN-CALL */
+async function populateIncallCamMenu() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const cams = devices.filter(d => d.kind === 'videoinput');
+  incallCamMenu.innerHTML = '';
+  if (!cams.length) {
+    const empty = document.createElement('div');
+    empty.style.padding='10px 12px'; empty.style.color='var(--text-dim)';
+    empty.textContent='Nessuna fotocamera trovata'; incallCamMenu.appendChild(empty); return;
+  }
+  cams.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.type='button'; b.role='menuitem'; b.textContent = d.label || `Fotocamera ${i+1}`;
+    b.addEventListener('click', () => switchIncallCamera(d.deviceId));
+    incallCamMenu.appendChild(b);
+  });
+}
+
+async function populateIncallMicMenu() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  const mics = devices.filter(d => d.kind === 'audioinput');
+  incallMicMenu.innerHTML = '';
+  if (!mics.length) {
+    const empty = document.createElement('div');
+    empty.style.padding='10px 12px'; empty.style.color='var(--text-dim)';
+    empty.textContent='Nessun microfono trovato'; incallMicMenu.appendChild(empty); return;
+  }
+  mics.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.type='button'; b.role='menuitem'; b.textContent = d.label || `Microfono ${i+1}`;
+    b.addEventListener('click', () => switchIncallMic(d.deviceId));
+    incallMicMenu.appendChild(b);
+  });
+}
+
+/* Sostituisce la fotocamera DURANTE la chiamata */
+async function switchIncallCamera(deviceId) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { deviceId: { exact: deviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
+      audio: false
+    });
+    const newTrack = stream.getVideoTracks()[0];
+    const oldTrack = localStream.getVideoTracks()[0];
+    if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
+    localStream.removeTrack(oldTrack); oldTrack.stop();
+    localStream.addTrack(newTrack);
+    localVideoElem.srcObject = new MediaStream([newTrack]);
+    currentVideoDeviceId = deviceId;
+    reflectIncallOverlayStates();
+    toast('Fotocamera cambiata');
+    closeIncallCamMenu();
+  } catch (e) {
+    console.error('switchIncallCamera error', e);
+    toast('Impossibile cambiare fotocamera');
+  }
+}
+
+/* Sostituisce il microfono DURANTE la chiamata */
+async function switchIncallMic(deviceId) {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      audio: { deviceId: { exact: deviceId }, echoCancellation:true, noiseSuppression:true, autoGainControl:true },
+      video: false
+    });
+    const newTrack = stream.getAudioTracks()[0];
+    const oldTrack = localStream.getAudioTracks()[0];
+    if (audioProducer) await audioProducer.replaceTrack({ track: newTrack });
+    if (oldTrack) { localStream.removeTrack(oldTrack); oldTrack.stop(); }
+    localStream.addTrack(newTrack);
+    reflectIncallOverlayStates();
+    toast('Microfono cambiato');
+    closeIncallMicMenu();
+  } catch (e) {
+    console.error('switchIncallMic error', e);
+    toast('Impossibile cambiare microfono');
+  }
+}
+
+incallBtnCamToggle.addEventListener('click', toggleCamIncall);
+incallBtnMicToggle.addEventListener('click', toggleMicIncall);
+
+incallBtnCamMenu.addEventListener('click', (e)=>{ e.stopPropagation(); populateIncallCamMenu().then(()=>toggleIncallCamMenu()); });
+incallBtnMicMenu.addEventListener('click', (e)=>{ e.stopPropagation(); populateIncallMicMenu().then(()=>toggleIncallMicMenu()); });
+
+document.addEventListener('click', (e) => {
+  if (!incallCamMenu.hidden && !incallCamMenu.contains(e.target) && e.target !== incallBtnCamMenu) closeIncallCamMenu();
+  if (!incallMicMenu.hidden && !incallMicMenu.contains(e.target) && e.target !== incallBtnMicMenu) closeIncallMicMenu();
+});
+
+
+    function setStatus(connected, label) { statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)'; }
+    function toast(msg, ms = 1800) { snackbar.textContent = msg; snackbar.classList.add('show'); setTimeout(() => snackbar.classList.remove('show'), ms); }
 
     function openCamMenu() { camMenu.hidden = false; btnCamMenu.setAttribute('aria-expanded', 'true'); }
     function closeCamMenu() { camMenu.hidden = true; btnCamMenu.setAttribute('aria-expanded', 'false'); }
     function toggleCamMenu() { camMenu.hidden ? openCamMenu() : closeCamMenu(); }
 
-    function togglePreviewCameraTrack() { const t = prejoinPreview.srcObject?.getVideoTracks?.()[0]; if (!t) return; t.enabled = !t.enabled; btnPreviewCam.setAttribute('aria-pressed', String(t.enabled)); icPreviewCam.textContent = t.enabled ? 'videocam' : 'videocam_off'; }
+    function openMicMenu() { micMenu.hidden = false; btnMicMenu.setAttribute('aria-expanded', 'true'); }
+    function closeMicMenu() { micMenu.hidden = true; btnMicMenu.setAttribute('aria-expanded', 'false'); }
+    function toggleMicMenu() { micMenu.hidden ? openMicMenu() : closeMicMenu(); }
+
+    function togglePreviewCameraTrack() {
+      const t = prejoinPreview.srcObject?.getVideoTracks?.()[0];
+      if (!t) return;
+      t.enabled = !t.enabled;
+      btnPreviewCam.setAttribute('aria-pressed', String(t.enabled));
+      icPreviewCam.textContent = t.enabled ? 'videocam' : 'videocam_off';
+      reflectOverlayStates();
+    }
 
     async function switchCamera(nextId) {
       const videos = await enumerateCameras(); if (!videos.length) return;
@@ -1108,8 +1377,23 @@
         setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, newId));
       }
       currentVideoDeviceId = newId;
-      videoSourceSelect2.value = newId;
       toast('Fotocamera cambiata');
+    }
+    function togglePreviewMicTrack() {
+      const t = previewAudioStream?.getAudioTracks?.()[0];
+      if (!t) return;
+      t.enabled = !t.enabled;
+      btnPreviewMic.setAttribute('aria-pressed', String(t.enabled));
+      icPreviewMic.textContent = t.enabled ? 'mic' : 'mic_off';
+      reflectOverlayStates();
+    }
+
+    function reflectOverlayStates() {
+      const camOn = btnPreviewCam.getAttribute('aria-pressed') === 'true';
+      const micOn = btnPreviewMic.getAttribute('aria-pressed') === 'true';
+
+      splitCamOverlay.classList.toggle('is-off', !camOn);
+      splitMicOverlay.classList.toggle('is-off', !micOn);
     }
 
     function hangupCall() {
@@ -1123,37 +1407,24 @@
         ownProducerIds.clear(); consumedProducerIds.clear();
         localVideoElem.srcObject = null; remoteVideoElem.srcObject = null;
         setStatus(false, 'Terminata'); prejoinBackdrop.style.display = 'grid'; updatePreview(currentVideoDeviceId); toast('Chiamata terminata');
+        reflectIncallOverlayStates();
       } catch (e) { console.error('Errore in hangup:', e); }
     }
 
     // --- Event wiring
     joinForm.addEventListener('submit', (e) => { e.preventDefault(); startCall().catch(err => { console.error(err); toast(err.message || 'Errore avvio'); }); });
-
-    btnMic.addEventListener('click', () => toggleMic());
-    btnCam.addEventListener('click', () => toggleCam());
-    btnSwitchCam.addEventListener('click', () => switchCamera());
+    
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
     btnCamMenu.addEventListener('click', (e) => { e.stopPropagation(); toggleCamMenu(); });
     btnPreviewCam.addEventListener('click', () => { togglePreviewCameraTrack(); });
     document.addEventListener('click', (e) => { if (!camMenu.hidden && !camMenu.contains(e.target) && e.target !== btnCamMenu) { closeCamMenu(); } });
 
-    const openSettingsHandler = () => settingsDlg.showModal();
-    btnSettings.addEventListener('click', openSettingsHandler);
+    btnMicMenu.addEventListener('click', (e) => { e.stopPropagation(); toggleMicMenu(); });
+    btnPreviewMic.addEventListener('click', () => { togglePreviewMicTrack(); });
 
-    videoSourceSelect2.addEventListener('change', async () => { currentVideoDeviceId = videoSourceSelect2.value; if (sendTransport) await switchCamera(currentVideoDeviceId); else await updatePreview(currentVideoDeviceId); });
-
-    qualitySelect.addEventListener('change', async () => {
-      const [w, h] = qualitySelect.value.split('x').map(n => parseInt(n, 10)); desiredWidth = w; desiredHeight = h;
-      await updatePreview(currentVideoDeviceId);
-      if (sendTransport) {
-        const newStream = await getUserMediaFor(currentVideoDeviceId, false); const newTrack = newStream.getVideoTracks()[0];
-        if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
-        localStream.getVideoTracks().forEach(t => t.stop());
-        localStream = new MediaStream([newTrack, ...(localStream.getAudioTracks() || [])]);
-        localVideoElem.srcObject = new MediaStream([newTrack]);
-        setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, currentVideoDeviceId));
-        toast('Qualità video aggiornata');
-      }
+    document.addEventListener('click', (e) => {
+      if (!camMenu.hidden && !camMenu.contains(e.target) && e.target !== btnCamMenu) { closeCamMenu(); }
+      if (!micMenu.hidden && !micMenu.contains(e.target) && e.target !== btnMicMenu) { closeMicMenu(); }
     });
 
 
@@ -1166,15 +1437,28 @@
       const hasParams = !!(roomId && clientType && token);
       startCallBtn.disabled = !hasParams;
       startCallBtn.title = hasParams ? 'Avvia' : 'Aggiungi roomId, clientType e token alla URL';
-      remoteLabel.textContent = clientType === 'host' ? 'Guest' : 'Host';
-      chipRoom.textContent = roomId || '—';
 
       try { const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: true }); tmp.getTracks().forEach(t => t.stop()); } catch (err) { console.warn('Permessi media non concessi in anticipo (verranno richiesti al click).', err); }
       await enumerateCameras();
+      await enumerateMicrophones();
+
+      // Imposta default mic se non presente
+      const mics = await enumerateMicrophones();
+      if (!currentAudioDeviceId && mics.length) {
+        currentAudioDeviceId = mics[0].deviceId;
+      }
+
       const vids = await enumerateCameras();
-      if (!currentVideoDeviceId && vids.length) { currentVideoDeviceId = vids[0].deviceId; if (videoSourceSelect2) videoSourceSelect2.value = currentVideoDeviceId; }
+      if (!currentVideoDeviceId && vids.length) { currentVideoDeviceId = vids[0].deviceId; }
       await updatePreview(currentVideoDeviceId);
-      btnPreviewCam.setAttribute('aria-pressed', 'true'); icPreviewCam.textContent = 'videocam';
+      btnPreviewCam.setAttribute('aria-pressed', 'true');
+      icPreviewCam.textContent = 'videocam';
+
+      await updatePreviewAudio(currentAudioDeviceId, true);
+      btnPreviewMic.setAttribute('aria-pressed', 'true');
+      icPreviewMic.textContent = 'mic';
+
+      reflectOverlayStates();
     });
 
     function ensurePlayback(videoEl) {
