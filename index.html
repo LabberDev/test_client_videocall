@@ -108,8 +108,6 @@
    APP LAYOUT
    ========================= */
     .app {
-      display: grid;
-      grid-template-rows: auto 1fr auto;
       min-height: 100svh;
     }
 
@@ -164,9 +162,6 @@
 
     /* Main */
     .main {
-      display: grid;
-      grid-template-columns: 1fr minmax(300px, 340px);
-      gap: var(--gap);
       padding: var(--gap);
       width: 100vw;
     }
@@ -197,7 +192,7 @@
       background: #000;
       isolation: isolate;
       min-height: 220px;
-      width: auto;
+      width: 100%;
       aspect-ratio: var(--tile-aspect);
       outline: none;
     }
@@ -516,11 +511,13 @@
       gap: 0;
       width: auto;
       margin-inline: auto;
+      margin: auto;
       border-radius: 999px;
       overflow: hidden;
       box-shadow: var(--shadow);
       border: 1px solid var(--glass);
       background: var(--surface-2);
+      position: relative;
     }
 
     .btn-split {
@@ -594,6 +591,18 @@
       border-left-color: rgba(255, 255, 255, .25);
     }
 
+    .controls .split {
+      overflow: visible;
+    }
+
+    .controls .split .menu {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      min-width: 260px;
+    }
+
     /* =========================
    MENUS (base + overlay)
    ========================= */
@@ -605,7 +614,6 @@
       box-shadow: var(--shadow);
       z-index: 70;
       padding: 6px;
-      /* default: sopra al bottone (per split-left) */
       bottom: 100%;
       margin-bottom: 8px;
     }
@@ -677,7 +685,7 @@
     /* =========================
    RESPONSIVE
    ========================= */
-    @media (max-width: 1024px) {
+    @media (max-width: 640px) {
       .main {
         grid-template-columns: 1fr;
       }
@@ -788,48 +796,6 @@
       <section class="panel stage" aria-label="Griglia video">
         <div class="tile" id="localTile" tabindex="0">
           <video id="localVideo" autoplay muted playsinline></video>
-          <!-- Overlay controlli IN-CALL -->
-          <div class="overlay" id="incallOverlay">
-            <!-- Split Fotocamera -->
-            <div class="split split--overlay" id="incallSplitCam"
-              aria-label="Controlli fotocamera (in-call)">
-              <button type="button" id="incallBtnCamMenu"
-                class="btn-split split-left" aria-haspopup="menu"
-                aria-expanded="false" title="Seleziona fotocamera">
-                <span class="material-symbols-rounded"
-                  aria-hidden="true">expand_less</span>
-              </button>
-              <button type="button" id="incallBtnCamToggle"
-                class="btn-split split-right" aria-pressed="true"
-                title="Attiva/Disattiva fotocamera">
-                <span class="material-symbols-rounded"
-                  id="incallIcCam">videocam</span>
-              </button>
-            </div>
-
-            <!-- Split Microfono -->
-            <div class="split split--overlay" id="incallSplitMic"
-              aria-label="Controlli microfono (in-call)">
-              <button type="button" id="incallBtnMicMenu"
-                class="btn-split split-left" aria-haspopup="menu"
-                aria-expanded="false" title="Seleziona microfono">
-                <span class="material-symbols-rounded"
-                  aria-hidden="true">expand_less</span>
-              </button>
-              <button type="button" id="incallBtnMicToggle"
-                class="btn-split split-right" aria-pressed="true"
-                title="Attiva/Disattiva microfono">
-                <span class="material-symbols-rounded"
-                  id="incallIcMic">mic</span>
-              </button>
-            </div>
-
-            <!-- Menù dispositivi (aprono sopra agli split) -->
-            <div id="incallCamMenu" class="menu menu--overlay" role="menu"
-              hidden></div>
-            <div id="incallMicMenu" class="menu menu--overlay" role="menu"
-              hidden></div>
-          </div>
 
           <div class="badge">Tu</div>
         </div>
@@ -843,13 +809,50 @@
     <!-- Bottom Controls -->
     <div class="controls" role="toolbar" aria-label="Controlli chiamata">
       <div class="pill">
+        <!-- CAM -->
+        <div class="split" id="incallSplitCam"
+          aria-label="Controlli fotocamera (in-call)">
+          <button type="button" id="incallBtnCamMenu"
+            class="btn-split split-left" aria-haspopup="menu"
+            aria-expanded="false" title="Seleziona fotocamera">
+            <span class="material-symbols-rounded"
+              aria-hidden="true">expand_less</span>
+          </button>
+          <button type="button" id="incallBtnCamToggle"
+            class="btn-split split-right" aria-pressed="true"
+            title="Attiva/Disattiva fotocamera">
+            <span class="material-symbols-rounded"
+              id="incallIcCam">videocam</span>
+          </button>
+          <!-- Menu fotocamere -->
+          <div id="incallCamMenu" class="menu" role="menu" hidden></div>
+        </div>
 
+        <!-- MIC -->
+        <div class="split" id="incallSplitMic"
+          aria-label="Controlli microfono (in-call)">
+          <button type="button" id="incallBtnMicMenu"
+            class="btn-split split-left" aria-haspopup="menu"
+            aria-expanded="false" title="Seleziona microfono">
+            <span class="material-symbols-rounded"
+              aria-hidden="true">expand_less</span>
+          </button>
+          <button type="button" id="incallBtnMicToggle"
+            class="btn-split split-right" aria-pressed="true"
+            title="Attiva/Disattiva microfono">
+            <span class="material-symbols-rounded" id="incallIcMic">mic</span>
+          </button>
+          <!-- Menu microfoni -->
+          <div id="incallMicMenu" class="menu" role="menu" hidden></div>
+        </div>
+
+        <!-- HANGUP -->
         <button class="ctrl-btn danger" id="btnHangup"
           aria-label="Termina chiamata" title="Termina">
           <span class="material-symbols-rounded">call_end</span>
         </button>
-
       </div>
+
     </div>
   </div>
 
@@ -1216,131 +1219,131 @@
     }
 
     function reflectIncallOverlayStates() {
-  const camOn = localStream?.getVideoTracks?.()[0]?.enabled !== false;
-  const micOn = localStream?.getAudioTracks?.()[0]?.enabled !== false;
-  incallSplitCam.classList.toggle('is-off', !camOn);
-  incallSplitMic.classList.toggle('is-off', !micOn);
-  incallIcCam.textContent = camOn ? 'videocam' : 'videocam_off';
-  incallIcMic.textContent = micOn ? 'mic' : 'mic_off';
-  incallBtnCamToggle.setAttribute('aria-pressed', String(camOn));
-  incallBtnMicToggle.setAttribute('aria-pressed', String(micOn));
-}
+      const camOn = localStream?.getVideoTracks?.()[0]?.enabled !== false;
+      const micOn = localStream?.getAudioTracks?.()[0]?.enabled !== false;
+      incallSplitCam.classList.toggle('is-off', !camOn);
+      incallSplitMic.classList.toggle('is-off', !micOn);
+      incallIcCam.textContent = camOn ? 'videocam' : 'videocam_off';
+      incallIcMic.textContent = micOn ? 'mic' : 'mic_off';
+      incallBtnCamToggle.setAttribute('aria-pressed', String(camOn));
+      incallBtnMicToggle.setAttribute('aria-pressed', String(micOn));
+    }
 
-async function toggleCamIncall() {
-  const track = localStream?.getVideoTracks?.()[0];
-  if (!track) return;
-  track.enabled = !track.enabled;
-  try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch {}
-  reflectIncallOverlayStates();
-  toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
-}
+    async function toggleCamIncall() {
+      const track = localStream?.getVideoTracks?.()[0];
+      if (!track) return;
+      track.enabled = !track.enabled;
+      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch { }
+      reflectIncallOverlayStates();
+      toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
+    }
 
-async function toggleMicIncall() {
-  const track = localStream?.getAudioTracks?.()[0];
-  if (!track) return;
-  track.enabled = !track.enabled;
-  try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch {}
-  reflectIncallOverlayStates();
-  toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
-}
+    async function toggleMicIncall() {
+      const track = localStream?.getAudioTracks?.()[0];
+      if (!track) return;
+      track.enabled = !track.enabled;
+      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch { }
+      reflectIncallOverlayStates();
+      toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
+    }
 
-function openIncallCamMenu(){ incallCamMenu.hidden = false; incallBtnCamMenu.setAttribute('aria-expanded','true'); }
-function closeIncallCamMenu(){ incallCamMenu.hidden = true; incallBtnCamMenu.setAttribute('aria-expanded','false'); }
-function toggleIncallCamMenu(){ incallCamMenu.hidden ? openIncallCamMenu() : closeIncallCamMenu(); }
+    function openIncallCamMenu() { incallCamMenu.hidden = false; incallBtnCamMenu.setAttribute('aria-expanded', 'true'); }
+    function closeIncallCamMenu() { incallCamMenu.hidden = true; incallBtnCamMenu.setAttribute('aria-expanded', 'false'); }
+    function toggleIncallCamMenu() { incallCamMenu.hidden ? openIncallCamMenu() : closeIncallCamMenu(); }
 
-function openIncallMicMenu(){ incallMicMenu.hidden = false; incallBtnMicMenu.setAttribute('aria-expanded','true'); }
-function closeIncallMicMenu(){ incallMicMenu.hidden = true; incallBtnMicMenu.setAttribute('aria-expanded','false'); }
-function toggleIncallMicMenu(){ incallMicMenu.hidden ? openIncallMicMenu() : closeIncallMicMenu(); }
+    function openIncallMicMenu() { incallMicMenu.hidden = false; incallBtnMicMenu.setAttribute('aria-expanded', 'true'); }
+    function closeIncallMicMenu() { incallMicMenu.hidden = true; incallBtnMicMenu.setAttribute('aria-expanded', 'false'); }
+    function toggleIncallMicMenu() { incallMicMenu.hidden ? openIncallMicMenu() : closeIncallMicMenu(); }
 
-/* Popola i menu dispositivi IN-CALL */
-async function populateIncallCamMenu() {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const cams = devices.filter(d => d.kind === 'videoinput');
-  incallCamMenu.innerHTML = '';
-  if (!cams.length) {
-    const empty = document.createElement('div');
-    empty.style.padding='10px 12px'; empty.style.color='var(--text-dim)';
-    empty.textContent='Nessuna fotocamera trovata'; incallCamMenu.appendChild(empty); return;
-  }
-  cams.forEach((d,i) => {
-    const b = document.createElement('button');
-    b.type='button'; b.role='menuitem'; b.textContent = d.label || `Fotocamera ${i+1}`;
-    b.addEventListener('click', () => switchIncallCamera(d.deviceId));
-    incallCamMenu.appendChild(b);
-  });
-}
+    /* Popola i menu dispositivi IN-CALL */
+    async function populateIncallCamMenu() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const cams = devices.filter(d => d.kind === 'videoinput');
+      incallCamMenu.innerHTML = '';
+      if (!cams.length) {
+        const empty = document.createElement('div');
+        empty.style.padding = '10px 12px'; empty.style.color = 'var(--text-dim)';
+        empty.textContent = 'Nessuna fotocamera trovata'; incallCamMenu.appendChild(empty); return;
+      }
+      cams.forEach((d, i) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.role = 'menuitem'; b.textContent = d.label || `Fotocamera ${i + 1}`;
+        b.addEventListener('click', () => switchIncallCamera(d.deviceId));
+        incallCamMenu.appendChild(b);
+      });
+    }
 
-async function populateIncallMicMenu() {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const mics = devices.filter(d => d.kind === 'audioinput');
-  incallMicMenu.innerHTML = '';
-  if (!mics.length) {
-    const empty = document.createElement('div');
-    empty.style.padding='10px 12px'; empty.style.color='var(--text-dim)';
-    empty.textContent='Nessun microfono trovato'; incallMicMenu.appendChild(empty); return;
-  }
-  mics.forEach((d,i) => {
-    const b = document.createElement('button');
-    b.type='button'; b.role='menuitem'; b.textContent = d.label || `Microfono ${i+1}`;
-    b.addEventListener('click', () => switchIncallMic(d.deviceId));
-    incallMicMenu.appendChild(b);
-  });
-}
+    async function populateIncallMicMenu() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const mics = devices.filter(d => d.kind === 'audioinput');
+      incallMicMenu.innerHTML = '';
+      if (!mics.length) {
+        const empty = document.createElement('div');
+        empty.style.padding = '10px 12px'; empty.style.color = 'var(--text-dim)';
+        empty.textContent = 'Nessun microfono trovato'; incallMicMenu.appendChild(empty); return;
+      }
+      mics.forEach((d, i) => {
+        const b = document.createElement('button');
+        b.type = 'button'; b.role = 'menuitem'; b.textContent = d.label || `Microfono ${i + 1}`;
+        b.addEventListener('click', () => switchIncallMic(d.deviceId));
+        incallMicMenu.appendChild(b);
+      });
+    }
 
-/* Sostituisce la fotocamera DURANTE la chiamata */
-async function switchIncallCamera(deviceId) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { deviceId: { exact: deviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
-      audio: false
+    /* Sostituisce la fotocamera DURANTE la chiamata */
+    async function switchIncallCamera(deviceId) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { deviceId: { exact: deviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
+          audio: false
+        });
+        const newTrack = stream.getVideoTracks()[0];
+        const oldTrack = localStream.getVideoTracks()[0];
+        if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
+        localStream.removeTrack(oldTrack); oldTrack.stop();
+        localStream.addTrack(newTrack);
+        localVideoElem.srcObject = new MediaStream([newTrack]);
+        currentVideoDeviceId = deviceId;
+        reflectIncallOverlayStates();
+        toast('Fotocamera cambiata');
+        closeIncallCamMenu();
+      } catch (e) {
+        console.error('switchIncallCamera error', e);
+        toast('Impossibile cambiare fotocamera');
+      }
+    }
+
+    /* Sostituisce il microfono DURANTE la chiamata */
+    async function switchIncallMic(deviceId) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: deviceId }, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+          video: false
+        });
+        const newTrack = stream.getAudioTracks()[0];
+        const oldTrack = localStream.getAudioTracks()[0];
+        if (audioProducer) await audioProducer.replaceTrack({ track: newTrack });
+        if (oldTrack) { localStream.removeTrack(oldTrack); oldTrack.stop(); }
+        localStream.addTrack(newTrack);
+        reflectIncallOverlayStates();
+        toast('Microfono cambiato');
+        closeIncallMicMenu();
+      } catch (e) {
+        console.error('switchIncallMic error', e);
+        toast('Impossibile cambiare microfono');
+      }
+    }
+
+    incallBtnCamToggle.addEventListener('click', toggleCamIncall);
+    incallBtnMicToggle.addEventListener('click', toggleMicIncall);
+
+    incallBtnCamMenu.addEventListener('click', (e) => { e.stopPropagation(); populateIncallCamMenu().then(() => toggleIncallCamMenu()); });
+    incallBtnMicMenu.addEventListener('click', (e) => { e.stopPropagation(); populateIncallMicMenu().then(() => toggleIncallMicMenu()); });
+
+    document.addEventListener('click', (e) => {
+      if (!incallCamMenu.hidden && !incallCamMenu.contains(e.target) && e.target !== incallBtnCamMenu) closeIncallCamMenu();
+      if (!incallMicMenu.hidden && !incallMicMenu.contains(e.target) && e.target !== incallBtnMicMenu) closeIncallMicMenu();
     });
-    const newTrack = stream.getVideoTracks()[0];
-    const oldTrack = localStream.getVideoTracks()[0];
-    if (videoProducer) await videoProducer.replaceTrack({ track: newTrack });
-    localStream.removeTrack(oldTrack); oldTrack.stop();
-    localStream.addTrack(newTrack);
-    localVideoElem.srcObject = new MediaStream([newTrack]);
-    currentVideoDeviceId = deviceId;
-    reflectIncallOverlayStates();
-    toast('Fotocamera cambiata');
-    closeIncallCamMenu();
-  } catch (e) {
-    console.error('switchIncallCamera error', e);
-    toast('Impossibile cambiare fotocamera');
-  }
-}
-
-/* Sostituisce il microfono DURANTE la chiamata */
-async function switchIncallMic(deviceId) {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { deviceId: { exact: deviceId }, echoCancellation:true, noiseSuppression:true, autoGainControl:true },
-      video: false
-    });
-    const newTrack = stream.getAudioTracks()[0];
-    const oldTrack = localStream.getAudioTracks()[0];
-    if (audioProducer) await audioProducer.replaceTrack({ track: newTrack });
-    if (oldTrack) { localStream.removeTrack(oldTrack); oldTrack.stop(); }
-    localStream.addTrack(newTrack);
-    reflectIncallOverlayStates();
-    toast('Microfono cambiato');
-    closeIncallMicMenu();
-  } catch (e) {
-    console.error('switchIncallMic error', e);
-    toast('Impossibile cambiare microfono');
-  }
-}
-
-incallBtnCamToggle.addEventListener('click', toggleCamIncall);
-incallBtnMicToggle.addEventListener('click', toggleMicIncall);
-
-incallBtnCamMenu.addEventListener('click', (e)=>{ e.stopPropagation(); populateIncallCamMenu().then(()=>toggleIncallCamMenu()); });
-incallBtnMicMenu.addEventListener('click', (e)=>{ e.stopPropagation(); populateIncallMicMenu().then(()=>toggleIncallMicMenu()); });
-
-document.addEventListener('click', (e) => {
-  if (!incallCamMenu.hidden && !incallCamMenu.contains(e.target) && e.target !== incallBtnCamMenu) closeIncallCamMenu();
-  if (!incallMicMenu.hidden && !incallMicMenu.contains(e.target) && e.target !== incallBtnMicMenu) closeIncallMicMenu();
-});
 
 
     function setStatus(connected, label) { statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)'; }
@@ -1413,7 +1416,7 @@ document.addEventListener('click', (e) => {
 
     // --- Event wiring
     joinForm.addEventListener('submit', (e) => { e.preventDefault(); startCall().catch(err => { console.error(err); toast(err.message || 'Errore avvio'); }); });
-    
+
     btnHangup.addEventListener('click', () => { socket?.emit?.('hangup'); hangupCall(); });
     btnCamMenu.addEventListener('click', (e) => { e.stopPropagation(); toggleCamMenu(); });
     btnPreviewCam.addEventListener('click', () => { togglePreviewCameraTrack(); });
