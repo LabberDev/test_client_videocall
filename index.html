@@ -1138,6 +1138,12 @@
     }
 
     async function buildLocalStream(wantCam, wantMic) {
+      // Se entrambi OFF, niente getUserMedia (fallirebbe)
+      if (!wantCam && !wantMic) {
+        localVideoElem.srcObject = null;
+        return new MediaStream(); // stream vuoto
+      }
+
       const constraints = {
         video: wantCam
           ? (currentVideoDeviceId
@@ -1151,7 +1157,7 @@
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-      // Mostra anteprima locale solo se c’è il video
+      // Se c’è video, mostra l’anteprima locale
       const vtrack = stream.getVideoTracks()[0];
       if (vtrack) {
         localVideoElem.srcObject = new MediaStream([vtrack]);
@@ -1160,7 +1166,7 @@
         localVideoElem.srcObject = null;
       }
 
-      // Mantieni lo stato (inutile se non hai richiesto la traccia, ma sicuro)
+      // (ridondante ma innocuo)
       if (vtrack) vtrack.enabled = wantCam;
       const atrack = stream.getAudioTracks()[0];
       if (atrack) atrack.enabled = wantMic;
@@ -1254,8 +1260,12 @@
     }
 
     function reflectIncallOverlayStates() {
-      const camOn = localStream?.getVideoTracks?.()[0]?.enabled !== false;
-      const micOn = localStream?.getAudioTracks?.()[0]?.enabled !== false;
+      const v = localStream?.getVideoTracks?.()[0];
+      const a = localStream?.getAudioTracks?.()[0];
+
+      const camOn = !!v && v.enabled !== false;
+      const micOn = !!a && a.enabled !== false;
+
       incallSplitCam.classList.toggle('is-off', !camOn);
       incallSplitMic.classList.toggle('is-off', !micOn);
       incallIcCam.textContent = camOn ? 'videocam' : 'videocam_off';
@@ -1265,19 +1275,88 @@
     }
 
     async function toggleCamIncall() {
-      const track = localStream?.getVideoTracks?.()[0];
-      if (!track) return;
+      // Stream sempre presente (anche vuoto) dopo startCall
+      if (!localStream) localStream = new MediaStream();
+
+      let track = localStream.getVideoTracks()[0];
+
+      // Caso 1: NESSUNA traccia -> avvia la camera
+      if (!track) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: currentVideoDeviceId
+              ? { deviceId: { exact: currentVideoDeviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } }
+              : { width: { ideal: desiredWidth }, height: { ideal: desiredHeight } },
+            audio: false
+          });
+          const newTrack = stream.getVideoTracks()[0];
+          localStream.addTrack(newTrack);
+          localVideoElem.srcObject = new MediaStream([newTrack]);
+          setMirror(localVideoElem, isRearFromTrackOrLabel(newTrack, currentVideoDeviceId));
+
+          if (videoProducer) {
+            await videoProducer.replaceTrack({ track: newTrack });
+            await videoProducer.resume(); // assicurati che trasmetta
+          } else if (sendTransport) {
+            videoProducer = await sendTransport.produce({ track: newTrack });
+            ownProducerIds.add(videoProducer.id);
+          }
+          reflectIncallOverlayStates();
+          toast('Fotocamera attivata');
+        } catch (e) {
+          console.error('toggleCamIncall start error', e);
+          toast('Impossibile avviare la fotocamera');
+        }
+        return;
+      }
+
+      // Caso 2: c’è traccia -> toggle ON/OFF
       track.enabled = !track.enabled;
-      try { if (videoProducer) track.enabled ? await videoProducer.resume() : await videoProducer.pause(); } catch { }
+      try {
+        if (videoProducer) {
+          track.enabled ? await videoProducer.resume() : await videoProducer.pause();
+        }
+      } catch { /* ignora */ }
       reflectIncallOverlayStates();
       toast(track.enabled ? 'Fotocamera attivata' : 'Fotocamera disattivata');
     }
 
     async function toggleMicIncall() {
-      const track = localStream?.getAudioTracks?.()[0];
-      if (!track) return;
+      if (!localStream) localStream = new MediaStream();
+
+      let track = localStream.getAudioTracks()[0];
+
+      if (!track) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+            video: false
+          });
+          const newTrack = stream.getAudioTracks()[0];
+          localStream.addTrack(newTrack);
+
+          if (audioProducer) {
+            await audioProducer.replaceTrack({ track: newTrack });
+            await audioProducer.resume();
+          } else if (sendTransport) {
+            audioProducer = await sendTransport.produce({ track: newTrack });
+            ownProducerIds.add(audioProducer.id);
+          }
+          reflectIncallOverlayStates();
+          toast('Microfono attivato');
+        } catch (e) {
+          console.error('toggleMicIncall start error', e);
+          toast('Impossibile avviare il microfono');
+        }
+        return;
+      }
+
       track.enabled = !track.enabled;
-      try { if (audioProducer) track.enabled ? await audioProducer.resume() : await audioProducer.pause(); } catch { }
+      try {
+        if (audioProducer) {
+          track.enabled ? await audioProducer.resume() : await audioProducer.pause();
+        }
+      } catch { }
       reflectIncallOverlayStates();
       toast(track.enabled ? 'Microfono attivato' : 'Microfono disattivato');
     }
