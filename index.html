@@ -1137,41 +1137,75 @@
       }
     }
 
-    async function buildLocalStream() {
-      const selId = currentVideoDeviceId;
-      const stream = await getUserMediaFor(selId, false);
-      currentVideoDeviceId = selId || currentVideoDeviceId;
-      const preview = new MediaStream(stream.getVideoTracks());
-      localVideoElem.srcObject = preview;
-      const vtrackLocal = stream.getVideoTracks()[0];
-      setMirror(localVideoElem, isRearFromTrackOrLabel(vtrackLocal, currentVideoDeviceId));
+    async function buildLocalStream(wantCam, wantMic) {
+      const constraints = {
+        video: wantCam
+          ? (currentVideoDeviceId
+            ? { deviceId: { exact: currentVideoDeviceId }, width: { ideal: desiredWidth }, height: { ideal: desiredHeight } }
+            : { width: { ideal: desiredWidth }, height: { ideal: desiredHeight } })
+          : false,
+        audio: wantMic
+          ? { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+          : false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
+      // Mostra anteprima locale solo se c’è il video
+      const vtrack = stream.getVideoTracks()[0];
+      if (vtrack) {
+        localVideoElem.srcObject = new MediaStream([vtrack]);
+        setMirror(localVideoElem, isRearFromTrackOrLabel(vtrack, currentVideoDeviceId));
+      } else {
+        localVideoElem.srcObject = null;
+      }
+
+      // Mantieni lo stato (inutile se non hai richiesto la traccia, ma sicuro)
+      if (vtrack) vtrack.enabled = wantCam;
+      const atrack = stream.getAudioTracks()[0];
+      if (atrack) atrack.enabled = wantMic;
+
       return stream;
     }
 
     async function produceTracks() {
-      if (!sendTransport || !localStream) return;
-      const audioTrack = localStream.getAudioTracks()[0];
-      const videoTrack = localStream.getVideoTracks()[0];
-      try { if (audioTrack && !audioProducer) audioProducer = await sendTransport.produce({ track: audioTrack }); } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
-      try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
-      catch (err) {
-        console.warn('[produce] video default failed', err?.message || err);
+      async function produceTracks() {
+        if (!sendTransport || !localStream) return;
+
+        const a = localStream.getAudioTracks()[0];
+        const v = localStream.getVideoTracks()[0];
+
         try {
-          const caps = device?.rtpCapabilities || {};
-          const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
-          const vp8 = vCodecs.find(c => /video\/vp8/i.test(c.mimeType));
-          const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
-          const candidates = [vp8, h264].filter(Boolean);
-          for (const codec of candidates) {
-            try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
-            catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
+          if (a && !audioProducer) {
+            audioProducer = await sendTransport.produce({ track: a, paused: a.enabled === false });
           }
-        } catch { }
-        if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
+        } catch (err) { console.warn('[produce] audio failed', err); }
+
+        try {
+          if (v && !videoProducer) {
+            videoProducer = await sendTransport.produce({ track: v, paused: v.enabled === false });
+          }
+        } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
+        try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
+        catch (err) {
+          console.warn('[produce] video default failed', err?.message || err);
+          try {
+            const caps = device?.rtpCapabilities || {};
+            const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
+            const vp8 = vCodecs.find(c => /video\/vp8/i.test(c.mimeType));
+            const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
+            const candidates = [vp8, h264].filter(Boolean);
+            for (const codec of candidates) {
+              try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
+              catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
+            }
+          } catch { }
+          if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
+        }
+        if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
+        if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
+        console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
       }
-      if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
-      if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
-      console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
     }
 
     async function subscribeToProducer(producerId) {
@@ -1202,11 +1236,13 @@
       const routerRtpCapabilities = await getRouterCapabilities();
       device = new Device(); await device.load({ routerRtpCapabilities });
       if (!device.canProduce('audio') && !device.canProduce('video')) { toast('Questo device non può produrre audio o video.'); return; }
-      localStream = await buildLocalStream();
-      reflectIncallOverlayStates();
+      const wantCam = btnPreviewCam.getAttribute('aria-pressed') === 'true';
+      const wantMic = btnPreviewMic.getAttribute('aria-pressed') === 'true';
+      localStream = await buildLocalStream(wantCam, wantMic);
       sendTransport = await createTransport('send'); setupTransportListeners(sendTransport, 'send'); sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); });
       recvTransport = await createTransport('recv'); setupTransportListeners(recvTransport, 'recv'); recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); });
       await produceTracks();
+      reflectIncallOverlayStates();
       for (const p of (existingProducers || [])) { const prodId = p.producerId ?? p; await subscribeToProducer(prodId, p?.appData?.socketId); }
       socket.on('newProducer', ({ producerId }) => { const doSub = () => subscribeToProducer(producerId).catch(() => { }); setTimeout(doSub, 0); setTimeout(doSub, 300); });
       socket.on('hangup', hangupCall);
