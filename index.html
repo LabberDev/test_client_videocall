@@ -1171,18 +1171,18 @@
     async function produceTracks() {
       if (!sendTransport || !localStream) return;
 
-      const a = localStream.getAudioTracks()[0];
-      const v = localStream.getVideoTracks()[0];
+      const audioTrack = localStream.getAudioTracks()[0];
+      const videoTrack = localStream.getVideoTracks()[0];
 
       try {
-        if (a && !audioProducer) {
-          audioProducer = await sendTransport.produce({ track: a, paused: a.enabled === false });
+        if (audioTrack && !audioProducer) {
+          audioProducer = await sendTransport.produce({ track: audioTrack, paused: audioTrack.enabled === false });
         }
       } catch (err) { console.warn('[produce] audio failed', err); }
 
       try {
-        if (v && !videoProducer) {
-          videoProducer = await sendTransport.produce({ track: v, paused: v.enabled === false });
+        if (videoTrack && !videoProducer) {
+          videoProducer = await sendTransport.produce({ track: videoTrack, paused: videoTrack.enabled === false });
         }
       } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
       try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
