@@ -109,6 +109,7 @@
    ========================= */
     .app {
       min-height: 100svh;
+      background-color: white;
     }
 
     /* Top App Bar */
@@ -118,7 +119,6 @@
       gap: 12px;
       padding: 12px clamp(12px, 3vw, 24px);
       background: linear-gradient(180deg, color-mix(in oklab, var(--surface), transparent 25%), transparent);
-      border-bottom: 1px solid var(--glass);
       position: sticky;
       top: 0;
       z-index: 30;
@@ -167,13 +167,11 @@
     }
 
     .panel {
-      background: var(--surface);
+      background: transparent;
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       min-height: 0;
       width: auto;
       margin-inline: auto;
-      border: 1px solid var(--glass);
     }
 
     /* Stage: responsive video grid */
@@ -228,7 +226,7 @@
       bottom: 12px;
       padding: 6px 10px;
       border-radius: 999px;
-      background: rgba(0, 0, 0, .45);
+      background: rgba(0, 0, 0, .30);
       color: #fff;
       font-size: .9rem;
       backdrop-filter: blur(6px);
@@ -301,8 +299,8 @@
     .pill {
       display: flex;
       gap: 8px;
-      padding: 10px;
-      background: color-mix(in oklab, var(--surface), #000 4%);
+      padding: 10px 15px;
+      background: color-mix(in oklab, var(--surface), #000 8%);
       border-radius: 999px;
       box-shadow: var(--shadow);
       border: 1px solid var(--glass);
@@ -408,7 +406,6 @@
       align-content: center;
       justify-items: center;
       text-align: center;
-      border-left: 1px solid var(--glass);
     }
 
     .prejoin .form .form-title {
@@ -472,13 +469,13 @@
       cursor: pointer;
       font-weight: 800;
       letter-spacing: .2px;
-      box-shadow: 0 8px 24px color-mix(in oklab, black, transparent 75%);
+      box-shadow: 0 8px 24px color-mix(in oklab, black, transparent 50%);
       transition: transform .06s ease, box-shadow .2s ease;
       backdrop-filter: blur(6px);
     }
 
     .btn-primary:hover {
-      box-shadow: 0 10px 30px color-mix(in oklab, var(--primary), transparent 68%);
+      box-shadow: 0 10px 30px color-mix(in oklab, black, transparent 68%);
     }
 
     .btn-primary:active {
@@ -499,6 +496,7 @@
       gap: 8px;
       align-items: center;
       text-align: center;
+      margin-bottom: 10px;
     }
 
     /* =========================
@@ -515,7 +513,8 @@
       border-radius: 999px;
       overflow: hidden;
       box-shadow: var(--shadow);
-      border: 1px solid var(--glass);
+      border: 1px solid #b6b6b9;
+      border-right: none;
       background: var(--surface-2);
       position: relative;
     }
@@ -550,25 +549,28 @@
     }
 
     .split-right {
-      border-radius: 50px;
-      background-color: #d8d7d7;
+      border-radius: 25px;
+      border: 1px solid #b6b6b9;
     }
 
     .split-right[aria-pressed="false"] {
       opacity: .85;
       background-color: #d36363;
+      border: 1px solid #b64b4b;
     }
 
     /* riflette lo stato anche sul sinistro */
     .split:has(.split-right[aria-pressed="false"]) {
       background-color: #e97b7bc6;
+      border: 1px solid #b64b4b;
+      border-right: none;
     }
 
     /* Variante overlay */
     .split.split--overlay {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.85);
+      background: transparent;
       backdrop-filter: blur(6px);
+
     }
 
     .split.split--overlay .btn-split {
@@ -577,18 +579,6 @@
 
     .split.split--overlay .split-right {
       background: transparent;
-      border-left: 1px solid rgba(255, 255, 255, .35);
-      border-radius: 0;
-    }
-
-    .split.split--overlay.is-off {
-      background: var(--danger);
-      border-color: var(--danger);
-    }
-
-    .split.split--overlay.is-off .split-right {
-      background: rgba(0, 0, 0, .08);
-      border-left-color: rgba(255, 255, 255, .25);
     }
 
     .controls .split {
@@ -719,7 +709,6 @@
       .prejoin .form {
         order: 3;
         border-left: 0;
-        border-top: 1px solid var(--glass);
       }
 
       .prejoin .form .form-title {
@@ -741,9 +730,6 @@
         transform: translateX(-50%);
       }
 
-      #startCallBtn.btn-primary {
-        margin-top: 8px;
-      }
     }
 
     @media (max-width: 640px) {
@@ -912,7 +898,7 @@
 
       <form class="form" id="joinForm">
         <h3 class="form-title">Verifica Documentazione Check-in</h3>
-        <div class="hstack" style="margin-top:6px;">
+        <div class="hstack">
           <button type="submit" class="btn-primary" id="startCallBtn">
             <span class="material-symbols-rounded"
               style="vertical-align: middle;">call</span> Entra nella
