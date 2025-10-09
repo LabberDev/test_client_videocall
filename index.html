@@ -585,12 +585,12 @@
       overflow: visible;
     }
 
-    .controls .split .menu {
-      position: absolute;
-      bottom: calc(100% + 8px);
+    /* Solo per i menu in-call dentro la toolbar */
+    .controls .menu.menu--overlay {
+      position: fixed;
       left: 50%;
       transform: translateX(-50%);
-      min-width: 260px;
+      bottom: 60px;
     }
 
     /* =========================
@@ -724,12 +724,6 @@
         margin: 0 auto;
       }
 
-      .menu--overlay {
-        min-width: 88vw;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-
     }
 
     @media (max-width: 640px) {
@@ -749,11 +743,6 @@
         box-shadow: var(--shadow);
       }
 
-      .menu {
-        min-width: 88vw;
-        left: 50%;
-        transform: translateX(-50%);
-      }
     }
 
     /* Reduced motion */
@@ -811,7 +800,8 @@
               id="incallIcCam">videocam</span>
           </button>
           <!-- Menu fotocamere -->
-          <div id="incallCamMenu" class="menu" role="menu" hidden></div>
+          <div id="incallCamMenu" class="menu menu--overlay" role="menu" hidden>
+          </div>
         </div>
 
         <!-- MIC -->
@@ -829,7 +819,8 @@
             <span class="material-symbols-rounded" id="incallIcMic">mic</span>
           </button>
           <!-- Menu microfoni -->
-          <div id="incallMicMenu" class="menu" role="menu" hidden></div>
+          <div id="incallMicMenu" class="menu menu--overlay" role="menu" hidden>
+          </div>
         </div>
 
         <!-- HANGUP -->
@@ -1349,11 +1340,25 @@
 
     function openIncallCamMenu() { incallCamMenu.hidden = false; incallBtnCamMenu.setAttribute('aria-expanded', 'true'); }
     function closeIncallCamMenu() { incallCamMenu.hidden = true; incallBtnCamMenu.setAttribute('aria-expanded', 'false'); }
-    function toggleIncallCamMenu() { incallCamMenu.hidden ? openIncallCamMenu() : closeIncallCamMenu(); }
+    function toggleIncallCamMenu() {
+      if (incallCamMenu.hidden) {
+        closeIncallMicMenu();
+        openIncallCamMenu();
+      } else {
+        closeIncallCamMenu();
+      }
+    }
 
     function openIncallMicMenu() { incallMicMenu.hidden = false; incallBtnMicMenu.setAttribute('aria-expanded', 'true'); }
     function closeIncallMicMenu() { incallMicMenu.hidden = true; incallBtnMicMenu.setAttribute('aria-expanded', 'false'); }
-    function toggleIncallMicMenu() { incallMicMenu.hidden ? openIncallMicMenu() : closeIncallMicMenu(); }
+    function toggleIncallMicMenu() {
+      if (incallMicMenu.hidden) {
+        closeIncallCamMenu();
+        openIncallMicMenu();
+      }
+      else
+        closeIncallMicMenu();
+    }
 
     /* Popola i menu dispositivi IN-CALL */
     async function populateIncallCamMenu() {
@@ -1445,17 +1450,29 @@
       if (!incallMicMenu.hidden && !incallMicMenu.contains(e.target) && e.target !== incallBtnMicMenu) closeIncallMicMenu();
     });
 
-
     function setStatus(connected, label) { statusDot.style.background = connected ? 'var(--ok)' : 'var(--danger)'; }
     function toast(msg, ms = 1800) { snackbar.textContent = msg; snackbar.classList.add('show'); setTimeout(() => snackbar.classList.remove('show'), ms); }
 
     function openCamMenu() { camMenu.hidden = false; btnCamMenu.setAttribute('aria-expanded', 'true'); }
     function closeCamMenu() { camMenu.hidden = true; btnCamMenu.setAttribute('aria-expanded', 'false'); }
-    function toggleCamMenu() { camMenu.hidden ? openCamMenu() : closeCamMenu(); }
+    function toggleCamMenu() {
+      if (camMenu.hidden) {
+        closeMicMenu();
+        openCamMenu()
+      }
+      else
+        closeCamMenu();
+    }
 
     function openMicMenu() { micMenu.hidden = false; btnMicMenu.setAttribute('aria-expanded', 'true'); }
     function closeMicMenu() { micMenu.hidden = true; btnMicMenu.setAttribute('aria-expanded', 'false'); }
-    function toggleMicMenu() { micMenu.hidden ? openMicMenu() : closeMicMenu(); }
+    function toggleMicMenu() {
+      if (micMenu.hidden) {
+        closeCamMenu();
+        openMicMenu()
+      } else
+        closeMicMenu();
+    }
 
     function togglePreviewCameraTrack() {
       const t = prejoinPreview.srcObject?.getVideoTracks?.()[0];
