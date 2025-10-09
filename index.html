@@ -1169,43 +1169,42 @@
     }
 
     async function produceTracks() {
-      async function produceTracks() {
-        if (!sendTransport || !localStream) return;
+      if (!sendTransport || !localStream) return;
 
-        const a = localStream.getAudioTracks()[0];
-        const v = localStream.getVideoTracks()[0];
+      const a = localStream.getAudioTracks()[0];
+      const v = localStream.getVideoTracks()[0];
 
-        try {
-          if (a && !audioProducer) {
-            audioProducer = await sendTransport.produce({ track: a, paused: a.enabled === false });
-          }
-        } catch (err) { console.warn('[produce] audio failed', err); }
-
-        try {
-          if (v && !videoProducer) {
-            videoProducer = await sendTransport.produce({ track: v, paused: v.enabled === false });
-          }
-        } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
-        try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
-        catch (err) {
-          console.warn('[produce] video default failed', err?.message || err);
-          try {
-            const caps = device?.rtpCapabilities || {};
-            const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
-            const vp8 = vCodecs.find(c => /video\/vp8/i.test(c.mimeType));
-            const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
-            const candidates = [vp8, h264].filter(Boolean);
-            for (const codec of candidates) {
-              try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
-              catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
-            }
-          } catch { }
-          if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
+      try {
+        if (a && !audioProducer) {
+          audioProducer = await sendTransport.produce({ track: a, paused: a.enabled === false });
         }
-        if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
-        if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
-        console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
+      } catch (err) { console.warn('[produce] audio failed', err); }
+
+      try {
+        if (v && !videoProducer) {
+          videoProducer = await sendTransport.produce({ track: v, paused: v.enabled === false });
+        }
+      } catch (err) { console.warn('[produce] audio default failed', err?.message || err); }
+      try { if (videoTrack && !videoProducer) videoProducer = await sendTransport.produce({ track: videoTrack }); }
+      catch (err) {
+        console.warn('[produce] video default failed', err?.message || err);
+        try {
+          const caps = device?.rtpCapabilities || {};
+          const vCodecs = (caps.codecs || []).filter(c => /video\//i.test(c.mimeType));
+          const vp8 = vCodecs.find(c => /video\/vp8/i.test(c.mimeType));
+          const h264 = vCodecs.find(c => /video\/h264/i.test(c.mimeType));
+          const candidates = [vp8, h264].filter(Boolean);
+          for (const codec of candidates) {
+            try { videoProducer = await sendTransport.produce({ track: videoTrack, codec }); console.log('[produce] video fallback OK with', codec?.mimeType); break; }
+            catch (e2) { console.warn('[produce] retry failed with', codec?.mimeType, e2?.message || e2); }
+          }
+        } catch { }
+        if (!videoProducer) toast('Impossibile inviare il video (codec non supportato)');
       }
+      if (audioProducer?.id) ownProducerIds.add(audioProducer.id);
+      if (videoProducer?.id) ownProducerIds.add(videoProducer.id);
+      console.log('[produce] ok', { audio: !!audioProducer, video: !!videoProducer });
+      reflectIncallOverlayStates();
     }
 
     async function subscribeToProducer(producerId) {
