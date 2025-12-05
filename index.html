@@ -3,12 +3,9 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Videocall • Meet‑style UI (Enhanced)</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0" />
   <style>
@@ -785,19 +782,14 @@
     <div class="controls" role="toolbar" aria-label="Controlli chiamata">
       <div class="pill">
         <!-- CAM -->
-        <div class="split" id="incallSplitCam"
-          aria-label="Controlli fotocamera (in-call)">
-          <button type="button" id="incallBtnCamMenu"
-            class="btn-split split-left" aria-haspopup="menu"
+        <div class="split" id="incallSplitCam" aria-label="Controlli fotocamera (in-call)">
+          <button type="button" id="incallBtnCamMenu" class="btn-split split-left" aria-haspopup="menu"
             aria-expanded="false" title="Seleziona fotocamera">
-            <span class="material-symbols-rounded"
-              aria-hidden="true">expand_less</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
           </button>
-          <button type="button" id="incallBtnCamToggle"
-            class="btn-split split-right" aria-pressed="true"
+          <button type="button" id="incallBtnCamToggle" class="btn-split split-right" aria-pressed="true"
             title="Attiva/Disattiva fotocamera">
-            <span class="material-symbols-rounded"
-              id="incallIcCam">videocam</span>
+            <span class="material-symbols-rounded" id="incallIcCam">videocam</span>
           </button>
           <!-- Menu fotocamere -->
           <div id="incallCamMenu" class="menu menu--overlay" role="menu" hidden>
@@ -805,16 +797,12 @@
         </div>
 
         <!-- MIC -->
-        <div class="split" id="incallSplitMic"
-          aria-label="Controlli microfono (in-call)">
-          <button type="button" id="incallBtnMicMenu"
-            class="btn-split split-left" aria-haspopup="menu"
+        <div class="split" id="incallSplitMic" aria-label="Controlli microfono (in-call)">
+          <button type="button" id="incallBtnMicMenu" class="btn-split split-left" aria-haspopup="menu"
             aria-expanded="false" title="Seleziona microfono">
-            <span class="material-symbols-rounded"
-              aria-hidden="true">expand_less</span>
+            <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
           </button>
-          <button type="button" id="incallBtnMicToggle"
-            class="btn-split split-right" aria-pressed="true"
+          <button type="button" id="incallBtnMicToggle" class="btn-split split-right" aria-pressed="true"
             title="Attiva/Disattiva microfono">
             <span class="material-symbols-rounded" id="incallIcMic">mic</span>
           </button>
@@ -824,8 +812,7 @@
         </div>
 
         <!-- HANGUP -->
-        <button class="ctrl-btn danger" id="btnHangup"
-          aria-label="Termina chiamata" title="Termina">
+        <button class="ctrl-btn danger" id="btnHangup" aria-label="Termina chiamata" title="Termina">
           <span class="material-symbols-rounded">call_end</span>
         </button>
       </div>
@@ -834,8 +821,7 @@
   </div>
 
   <!-- Prejoin Modal -->
-  <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog"
-    aria-modal="true">
+  <div class="prejoin-backdrop" id="prejoinBackdrop" role="dialog" aria-modal="true">
     <div class="prejoin" id="prejoin">
       <div class="prejoin-mobile-header">Verifica Documentazione Check-in</div>
       <div class="preview">
@@ -845,36 +831,26 @@
           <!-- Overlay controls -->
           <div class="overlay">
             <!-- Split Fotocamera (trasparente, bordo/icone bianchi) -->
-            <div class="split split--overlay" id="splitCamOverlay"
-              aria-label="Controlli fotocamera">
-              <button type="button" id="btnCamMenu" class="btn-split split-left"
-                aria-haspopup="menu" aria-expanded="false"
-                title="Seleziona fotocamera">
-                <span class="material-symbols-rounded"
-                  aria-hidden="true">expand_less</span>
+            <div class="split split--overlay" id="splitCamOverlay" aria-label="Controlli fotocamera">
+              <button type="button" id="btnCamMenu" class="btn-split split-left" aria-haspopup="menu"
+                aria-expanded="false" title="Seleziona fotocamera">
+                <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
               </button>
-              <button type="button" id="btnPreviewCam"
-                class="btn-split split-right" aria-pressed="true"
+              <button type="button" id="btnPreviewCam" class="btn-split split-right" aria-pressed="true"
                 title="Attiva/Disattiva fotocamera">
-                <span class="material-symbols-rounded"
-                  id="icPreviewCam">videocam</span>
+                <span class="material-symbols-rounded" id="icPreviewCam">videocam</span>
               </button>
             </div>
 
             <!-- Split Microfono (trasparente, bordo/icone bianchi) -->
-            <div class="split split--overlay" id="splitMicOverlay"
-              aria-label="Controlli microfono">
-              <button type="button" id="btnMicMenu" class="btn-split split-left"
-                aria-haspopup="menu" aria-expanded="false"
-                title="Seleziona microfono">
-                <span class="material-symbols-rounded"
-                  aria-hidden="true">expand_less</span>
+            <div class="split split--overlay" id="splitMicOverlay" aria-label="Controlli microfono">
+              <button type="button" id="btnMicMenu" class="btn-split split-left" aria-haspopup="menu"
+                aria-expanded="false" title="Seleziona microfono">
+                <span class="material-symbols-rounded" aria-hidden="true">expand_less</span>
               </button>
-              <button type="button" id="btnPreviewMic"
-                class="btn-split split-right" aria-pressed="true"
+              <button type="button" id="btnPreviewMic" class="btn-split split-right" aria-pressed="true"
                 title="Attiva/Disattiva microfono">
-                <span class="material-symbols-rounded"
-                  id="icPreviewMic">mic</span>
+                <span class="material-symbols-rounded" id="icPreviewMic">mic</span>
               </button>
             </div>
 
@@ -891,8 +867,7 @@
         <h3 class="form-title">Verifica Documentazione Check-in</h3>
         <div class="hstack">
           <button type="submit" class="btn-primary" id="startCallBtn">
-            <span class="material-symbols-rounded"
-              style="vertical-align: middle;">call</span> Entra nella
+            <span class="material-symbols-rounded" style="vertical-align: middle;">call</span> Entra nella
             videochiamata
           </button>
         </div>
@@ -973,6 +948,47 @@
     let currentVideoDeviceId = '';
     let desiredWidth = 1280, desiredHeight = 720;
     const deviceLabelMap = new Map();
+
+    // --- Orientazione device (per mobile)
+    let currentOrientationAngle = 0;
+
+    function getDeviceOrientationAngle() {
+      // API moderne (Chrome, Android, alcuni Safari recenti)
+      const so = screen.orientation || screen.mozOrientation || screen.msOrientation;
+      if (so && typeof so.angle === 'number') {
+        // Di solito è già 0 / 90 / 180 / 270
+        return so.angle;
+      }
+
+      // Fallback per iOS Safari (window.orientation è deprecato ma ancora usato)
+      if (typeof window.orientation === 'number') {
+        // window.orientation: 0, 90, -90, 180
+        let a = window.orientation;
+        // Normalizziamo in [0, 360)
+        if (a < 0) a += 360;
+        return a;
+      }
+
+      // Desktop o browser che non espongono niente: assumiamo 0
+      return 0;
+    }
+
+    function emitOrientationAngle(reason = 'unknown') {
+      if (!socket) return;
+      const angle = getDeviceOrientationAngle();
+      currentOrientationAngle = angle;
+
+      // Evento di tua scelta: "orientationAngle"
+      socket.emit('orientationAngle', {
+        angle,              // 0 / 90 / 180 / 270
+        reason,             // "initial", "change", "manual" ecc.
+        clientType: getUrlParams().clientType,
+        roomId: getUrlParams().roomId,
+      });
+
+      console.log('[orientationAngle] sent', { angle, reason });
+    }
+
     function isRearFromTrackOrLabel(track, deviceId) {
       try { const fm = track?.getSettings?.().facingMode; if (fm) return fm === 'environment'; } catch { }
       const label = (deviceLabelMap.get(deviceId) || '').toLowerCase();
@@ -1212,6 +1228,9 @@
       socket = io(serverURL, { query: { roomId, authToken: token, clientType } });
       const waitForConnect = s => new Promise(res => s.connected ? res() : s.once('connect', res));
       await waitForConnect(socket);
+
+      emitOrientationAngle('initial');
+
       socket.on('connect_error', (e) => { console.error('[socket connect_error]', e?.message || e); toast('Errore di connessione'); });
       const { canJoinRoom, existingProducers } = await joinRoom(roomId, clientType, token);
       if (!canJoinRoom) { setStatus(false, 'Accesso negato'); toast('Accesso alla room negato'); socket?.disconnect(); return; }
