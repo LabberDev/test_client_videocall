@@ -956,7 +956,7 @@
       // API moderne (Chrome, Android, alcuni Safari recenti)
       const so = screen.orientation || screen.mozOrientation || screen.msOrientation;
       if (so && typeof so.angle === 'number') {
-        // Di solito è già 0 / 90 / 180 / 270
+        console.log("angle", so.angle);
         return so.angle;
       }
 
@@ -966,6 +966,7 @@
         let a = window.orientation;
         // Normalizziamo in [0, 360)
         if (a < 0) a += 360;
+        console.log("angle", a);
         return a;
       }
 
