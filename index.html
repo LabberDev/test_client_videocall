@@ -953,6 +953,7 @@
 
     // --- Orientazione device (per mobile)
     let currentOrientationAngle = 0;
+    let lastOrientationSample = null;
 
     function getDeviceOrientationAngle() {
       // API moderne (Chrome, Android, alcuni Safari recenti)
@@ -975,20 +976,37 @@
       return 0;
     }
 
-    function emitOrientationAngle(reason = 'unknown') {
+    function emitOrientationAngle(reason = 'unknown', orientationData = null) {
       if (!socket) return;
       const angle = getDeviceOrientationAngle();
       currentOrientationAngle = angle;
 
-      // Evento di tua scelta: "orientationAngle"
-      socket.emit('orientationAngle', {
-        angle,              // 0 / 90 / 180 / 270
-        reason,             // "initial", "change", "manual" ecc.
+      const payload = {
+        angle,
+        reason,
         clientType: getUrlParams().clientType,
         roomId: getUrlParams().roomId,
-      });
+      };
 
-      console.log('[orientationAngle] sent', { angle, reason });
+      const extra = orientationData || lastOrientationSample;
+      if (extra) payload.orientation = extra;
+
+      socket.emit('orientationAngle', payload);
+      console.log('[orientationAngle] sent', payload);
+    }
+
+    function handleDeviceOrientation(event) {
+      if (!event) return;
+      lastOrientationSample = {
+        alpha: event.alpha ?? null,
+        beta: event.beta ?? null,
+        gamma: event.gamma ?? null,
+        absolute: event.absolute === true,
+      };
+      console.log('[deviceorientation] sample', lastOrientationSample);
+      if (socket?.connected) {
+        emitOrientationAngle('deviceorientation', lastOrientationSample);
+      }
     }
 
     function isRearFromTrackOrLabel(track, deviceId) {
@@ -1571,6 +1589,20 @@
       if (!camMenu.hidden && !camMenu.contains(e.target) && e.target !== btnCamMenu) { closeCamMenu(); }
       if (!micMenu.hidden && !micMenu.contains(e.target) && e.target !== btnMicMenu) { closeMicMenu(); }
     });
+
+    try {
+      if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+        window.addEventListener('deviceorientation', handleDeviceOrientation);
+      }
+      const orientationObj = screen?.orientation;
+      if (orientationObj?.addEventListener) {
+        orientationObj.addEventListener('change', () => { if (socket?.connected) emitOrientationAngle('screen-change'); });
+      } else if (typeof window !== 'undefined') {
+        window.addEventListener('orientationchange', () => { if (socket?.connected) emitOrientationAngle('orientationchange'); });
+      }
+    } catch (err) {
+      console.warn('Impossibile leggere orientation events', err);
+    }
 
 
 
