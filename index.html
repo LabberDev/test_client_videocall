@@ -941,6 +941,8 @@
     // --- Stato
     let socket, device, sendTransport, recvTransport, localStream, previewStream;
     let previewAudioStream = null;
+    let previewCamOn = btnPreviewCam.getAttribute('aria-pressed') === 'true';
+    let previewMicOn = btnPreviewMic.getAttribute('aria-pressed') === 'true';
     let currentAudioDeviceId = '';
     let audioProducer, videoProducer;
     const ownProducerIds = new Set();
@@ -1110,20 +1112,22 @@
         const onlyVideo = new MediaStream(previewStream.getVideoTracks());
         prejoinPreview.srcObject = onlyVideo;
         const vtrackPrev = previewStream.getVideoTracks()[0];
+        if (vtrackPrev) vtrackPrev.enabled = previewCamOn;
         setMirror(prejoinPreview, isRearFromTrackOrLabel(vtrackPrev, deviceId || currentVideoDeviceId));
       } catch (e) { console.warn('Anteprima non disponibile:', e); }
     }
 
     async function updatePreviewAudio(deviceId, ensureOn = false) {
       try {
+        if (ensureOn) {
+          previewMicOn = true;
+          btnPreviewMic.setAttribute('aria-pressed', 'true');
+          icPreviewMic.textContent = 'mic';
+        }
         if (previewAudioStream) previewAudioStream.getTracks().forEach(t => t.stop());
         previewAudioStream = await getUserAudioFor(deviceId || currentAudioDeviceId);
         const atrack = previewAudioStream.getAudioTracks()[0];
-        // Mantieni stato ON/OFF se l’utente ha già premuto
-        if (!ensureOn && btnPreviewMic.getAttribute('aria-pressed') === 'false') {
-          atrack.enabled = false;
-        }
-        // Non riproduciamo audio nell’anteprima (niente echo), ma teniamo il track “armato”.
+        if (atrack) atrack.enabled = previewMicOn;
         reflectOverlayStates();
       } catch (e) {
         console.warn('Anteprima audio non disponibile:', e);
@@ -1237,8 +1241,8 @@
       const routerRtpCapabilities = await getRouterCapabilities();
       device = new Device(); await device.load({ routerRtpCapabilities });
       if (!device.canProduce('audio') && !device.canProduce('video')) { toast('Questo device non può produrre audio o video.'); return; }
-      const wantCam = btnPreviewCam.getAttribute('aria-pressed') === 'true';
-      const wantMic = btnPreviewMic.getAttribute('aria-pressed') === 'true';
+      const wantCam = previewCamOn;
+      const wantMic = previewMicOn;
       localStream = await buildLocalStream(wantCam, wantMic);
       sendTransport = await createTransport('send'); setupTransportListeners(sendTransport, 'send'); sendTransport.on('connectionstatechange', (state) => { console.log('[sendTransport] state', state); });
       recvTransport = await createTransport('recv'); setupTransportListeners(recvTransport, 'recv'); recvTransport.on('connectionstatechange', (state) => { console.log('[recvTransport] state', state); });
@@ -1494,11 +1498,13 @@
     }
 
     function togglePreviewCameraTrack() {
+      previewCamOn = !previewCamOn;
+
       const t = prejoinPreview.srcObject?.getVideoTracks?.()[0];
-      if (!t) return;
-      t.enabled = !t.enabled;
-      btnPreviewCam.setAttribute('aria-pressed', String(t.enabled));
-      icPreviewCam.textContent = t.enabled ? 'videocam' : 'videocam_off';
+      if (t) t.enabled = previewCamOn;
+
+      btnPreviewCam.setAttribute('aria-pressed', String(previewCamOn));
+      icPreviewCam.textContent = previewCamOn ? 'videocam' : 'videocam_off';
       reflectOverlayStates();
     }
 
@@ -1518,21 +1524,21 @@
       currentVideoDeviceId = newId;
       toast('Fotocamera cambiata');
     }
+    
     function togglePreviewMicTrack() {
+      previewMicOn = !previewMicOn;
+
       const t = previewAudioStream?.getAudioTracks?.()[0];
-      if (!t) return;
-      t.enabled = !t.enabled;
-      btnPreviewMic.setAttribute('aria-pressed', String(t.enabled));
-      icPreviewMic.textContent = t.enabled ? 'mic' : 'mic_off';
+      if (t) t.enabled = previewMicOn;
+
+      btnPreviewMic.setAttribute('aria-pressed', String(previewMicOn));
+      icPreviewMic.textContent = previewMicOn ? 'mic' : 'mic_off';
       reflectOverlayStates();
     }
 
     function reflectOverlayStates() {
-      const camOn = btnPreviewCam.getAttribute('aria-pressed') === 'true';
-      const micOn = btnPreviewMic.getAttribute('aria-pressed') === 'true';
-
-      splitCamOverlay.classList.toggle('is-off', !camOn);
-      splitMicOverlay.classList.toggle('is-off', !micOn);
+      splitCamOverlay.classList.toggle('is-off', !previewCamOn);
+      splitMicOverlay.classList.toggle('is-off', !previewMicOn);
     }
 
     function hangupCall() {
